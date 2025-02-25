@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class TrainingDao {
+public class TrainingRepository {
 
     private InMemoryStorage storage;
 

@@ -7,12 +7,11 @@ public class Training {
     private Long trainerId;
     private Long traineeId;
     private String trainingName;
-    private TrainingType trainingType;
+    private TrainingType trainingType = new TrainingType();
     private LocalDate trainingDate;
     private int trainingDuration;
 
     public Training(){
-        this.trainingType = new TrainingType();
     }
 
     public Training(Long id, Long trainerId, Long traineeId, String trainingName,

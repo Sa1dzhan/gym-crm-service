@@ -5,8 +5,7 @@ import com.gymcrm.facade.GymFacade;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
-import com.gymcrm.service.TraineeService;
-import org.junit.jupiter.api.Assertions;
+import com.gymcrm.model.TrainingType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +63,7 @@ public class GymServiceApplicationTests {
         Trainer trainer = new Trainer();
         trainer.setFirstName("Alice");
         trainer.setLastName("Smith");
-        trainer.setSpecialization("Yoga");
+        trainer.setSpecialization(new TrainingType("Yoga"));
 
         Trainer created = gymFacade.createTrainer(trainer);
         assertNotNull(created.getId(), "Trainer ID should be assigned");
@@ -76,9 +75,9 @@ public class GymServiceApplicationTests {
         assertEquals("Alice", found.getFirstName(), "First name should match");
 
         // 3. Update
-        found.setSpecialization("Pilates");
+        found.setSpecialization(new TrainingType("Pilates"));
         Trainer updated = gymFacade.updateTrainer(found);
-        assertEquals("Pilates", updated.getSpecialization(), "Specialization should be updated");
+        assertEquals("Pilates", updated.getSpecialization().getName(), "Specialization should be updated");
 
         // 4. List all
         List<Trainer> allTrainers = gymFacade.getAllTrainers();
@@ -96,7 +95,7 @@ public class GymServiceApplicationTests {
         Trainer trainer = new Trainer();
         trainer.setFirstName("Carol");
         trainer.setLastName("Danvers");
-        trainer.setSpecialization("Cardio");
+        trainer.setSpecialization(new TrainingType("Yoga"));
         Trainer createdTrainer = gymFacade.createTrainer(trainer);
 
         // 1. Create Training

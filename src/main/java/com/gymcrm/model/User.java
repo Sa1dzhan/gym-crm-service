@@ -1,6 +1,6 @@
 package com.gymcrm.model;
 
-import java.util.Random;
+import com.gymcrm.util.UserCredentialGenerator;
 
 public class User {
     private Long id;
@@ -17,19 +17,9 @@ public class User {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.username = generateUsername(firstName, lastName);
-        this.password = generateRandomPassword();
+        this.username = UserCredentialGenerator.generateUsername(firstName, lastName);
+        this.password = UserCredentialGenerator.generateRandomPassword();
         this.isActive = true;
-    }
-
-    private String generateUsername(String firstName, String lastName) {
-        return firstName.toLowerCase() + "." + lastName.toLowerCase();
-    }
-
-    private String generateRandomPassword() {
-        return new Random().ints(10, 33, 122)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
     }
 
     public Long getId() {

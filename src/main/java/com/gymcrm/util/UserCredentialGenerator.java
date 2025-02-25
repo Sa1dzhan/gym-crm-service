@@ -3,11 +3,7 @@ package com.gymcrm.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UserCredentialGenerator {
 
@@ -16,30 +12,22 @@ public class UserCredentialGenerator {
     private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$_#-*";
     private static final int DEFAULT_PASSWORD_LENGTH = 10;
     private static final Random RANDOM = new Random();
+    private static long traineeUserId = 1;
+    private static long trainerUserId = 1;
 
     private UserCredentialGenerator() {
     }
 
-    public static String generateUniqueUsername(String firstName, String lastName, Set<String> existingUsernames) {
-        String base = firstName + "." + lastName;
-        String username = base;
-        int suffix = 1;
-        Set<String> lowerCaseUsernames = new HashSet<>();
+    public static Long generateTraineeUserId() {
+        return traineeUserId++;
+    }
 
-        // to lower case
-        if (!existingUsernames.isEmpty()) {
-            lowerCaseUsernames = existingUsernames.stream()
-                    .filter(Objects::nonNull)
-                    .map(String::toLowerCase)
-                    .collect(Collectors.toSet());
-        }
+    public static Long generateTrainerUserId() {
+        return trainerUserId++;
+    }
 
-        while (lowerCaseUsernames.contains(username.toLowerCase())) {
-            username = base + suffix;
-            suffix++;
-        }
-        logger.debug("Generated unique username: {}", username);
-        return username;
+    public static String generateUsername(String firstName, String lastName) {
+        return firstName + "." + lastName;
     }
 
     public static String generateRandomPassword() {

@@ -6,10 +6,8 @@ import com.gymcrm.model.Trainee;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.PropertySource;
 
 
-@PropertySource("classpath:application.properties")
 public class GymCrmApplication {
     private static final Logger logger = LoggerFactory.getLogger(GymCrmApplication.class);
 
@@ -36,7 +34,7 @@ public class GymCrmApplication {
         );
 
         facade.getAllTrainings().forEach(t ->
-                logger.info("Trainee: id={}, username={}", t.getId(), t.getTrainingName())
+                logger.info("Training: id={}, username={}", t.getId(), t.getTrainingName())
         );
 
         context.close();
