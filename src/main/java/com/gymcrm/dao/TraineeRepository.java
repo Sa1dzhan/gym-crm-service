@@ -20,7 +20,7 @@ public class TraineeRepository {
     }
 
     public Trainee create(Trainee trainee) {
-        trainee.setId(Collections.max(storage.getTraineeStorage().keySet()));
+        trainee.setId(Collections.max(storage.getTraineeStorage().keySet()) + 1);
         storage.getTraineeStorage().put(trainee.getId(), trainee);
         storage.getTraineeUsernames().put(trainee.getUsername(), trainee.getId());
 

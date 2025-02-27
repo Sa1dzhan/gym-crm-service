@@ -20,7 +20,7 @@ public class TrainerRepository {
     }
 
     public void create(Trainer trainer) {
-        trainer.setId(Collections.max(storage.getTrainerStorage().keySet()));
+        trainer.setId(Collections.max(storage.getTrainerStorage().keySet()) + 1);
         storage.getTrainerStorage().put(trainer.getId(), trainer);
         storage.getTrainerUsernames().put(trainer.getUsername(), trainer.getId());
     }
