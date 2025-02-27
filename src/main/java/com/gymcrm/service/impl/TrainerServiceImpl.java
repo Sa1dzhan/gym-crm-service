@@ -34,7 +34,7 @@ public class TrainerServiceImpl implements TrainerService {
         );
         String base = username;
 
-        while (containsUsername(username)) {
+        while (trainerRepository.existsByUsername(username)) {
             username = base + suffix;
             suffix++;
         }
@@ -44,10 +44,6 @@ public class TrainerServiceImpl implements TrainerService {
         trainerRepository.create(trainer);
         logger.info("Created Trainer with ID={}, username={}", trainer.getId(), trainer.getUsername());
         return trainer;
-    }
-
-    private Boolean containsUsername(String userName) {
-        return getAllTrainers().parallelStream().anyMatch(item -> item.getUsername().equals(userName));
     }
 
     @Override

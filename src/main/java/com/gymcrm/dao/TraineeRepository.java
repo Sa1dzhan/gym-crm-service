@@ -20,6 +20,7 @@ public class TraineeRepository {
 
     public void create(Trainee trainee) {
         storage.getTraineeStorage().put(trainee.getId(), trainee);
+        storage.getTraineeUsernames().put(trainee.getUsername(), trainee.getId());
     }
 
     public Trainee read(Long id) {
@@ -28,6 +29,7 @@ public class TraineeRepository {
 
     public void update(Trainee trainee) {
         storage.getTraineeStorage().put(trainee.getId(), trainee);
+        storage.getTraineeUsernames().put(trainee.getUsername(), trainee.getId());
     }
 
     public void delete(Long id) {
@@ -36,5 +38,9 @@ public class TraineeRepository {
 
     public List<Trainee> findAll() {
         return new ArrayList<>(storage.getTraineeStorage().values());
+    }
+
+    public boolean existsByUsername(String username) {
+        return storage.getTraineeUsernames().containsKey(username);
     }
 }

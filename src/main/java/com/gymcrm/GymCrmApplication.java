@@ -19,7 +19,7 @@ public class GymCrmApplication {
 
         // Example usage
         Trainee newTrainee = new Trainee();
-        newTrainee.setFirstName("John");
+        newTrainee.setFirstName("Jane");
         newTrainee.setLastName("Smith");
         newTrainee.setAddress("123 Maple St");
         facade.createTrainee(newTrainee);

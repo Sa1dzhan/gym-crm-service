@@ -17,7 +17,6 @@ public class TraineeServiceImpl implements TraineeService {
     private static final Logger logger = LoggerFactory.getLogger(TraineeServiceImpl.class);
 
     private TraineeRepository traineeRepository;
-    private long currentId = 1;
 
     @Autowired
     public void setTraineeDao(TraineeRepository traineeRepository) {
@@ -35,7 +34,7 @@ public class TraineeServiceImpl implements TraineeService {
         );
         String base = username;
 
-        while (containsUsername(username)) {
+        while (traineeRepository.existsByUsername(username)) {
             username = base + suffix;
             suffix++;
         }
@@ -47,10 +46,6 @@ public class TraineeServiceImpl implements TraineeService {
         logger.info("Created Trainee with ID={}, username={}", trainee.getId(), trainee.getUsername());
 
         return trainee;
-    }
-
-    private Boolean containsUsername(String userName) {
-        return getAllTrainees().parallelStream().anyMatch(item -> item.getUsername().equals(userName));
     }
 
     @Override
