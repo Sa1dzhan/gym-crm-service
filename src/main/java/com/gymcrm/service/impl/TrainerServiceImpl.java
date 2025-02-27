@@ -25,24 +25,12 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     public Trainer createTrainer(Trainer trainer) {
-        int suffix = 1;
-        trainer.setId(generateNewId());
         // generate username & password
-        String username = UserCredentialGenerator.generateUsername(
-                trainer.getFirstName(),
-                trainer.getLastName()
-        );
-        String base = username;
+        UserCredentialGenerator.generateUserCredentials(trainer, userName -> trainerRepository.existsByUsername(userName));
 
-        while (trainerRepository.existsByUsername(username)) {
-            username = base + suffix;
-            suffix++;
-        }
-
-        trainer.setUsername(username);
-        trainer.setPassword(UserCredentialGenerator.generateRandomPassword());
         trainerRepository.create(trainer);
         logger.info("Created Trainer with ID={}, username={}", trainer.getId(), trainer.getUsername());
+
         return trainer;
     }
 
@@ -61,9 +49,5 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public List<Trainer> getAllTrainers() {
         return trainerRepository.findAll();
-    }
-
-    private Long generateNewId() {
-        return UserCredentialGenerator.generateTrainerUserId();
     }
 }

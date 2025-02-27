@@ -8,7 +8,6 @@ import com.gymcrm.model.TrainingType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -18,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-public class StorageInitializer implements BeanPostProcessor {
+public class StorageInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(StorageInitializer.class);
 

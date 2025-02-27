@@ -1,9 +1,11 @@
 package com.gymcrm.util;
 
+import com.gymcrm.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Random;
+import java.util.function.Predicate;
 
 public class UserCredentialGenerator {
 
@@ -12,18 +14,22 @@ public class UserCredentialGenerator {
     private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$_#-*";
     private static final int DEFAULT_PASSWORD_LENGTH = 10;
     private static final Random RANDOM = new Random();
-    private static long traineeUserId = 1;
-    private static long trainerUserId = 1;
 
     private UserCredentialGenerator() {
     }
 
-    public static Long generateTraineeUserId() {
-        return traineeUserId++;
-    }
+    public static <T extends User> void generateUserCredentials(T user, Predicate<String> existsByUsername) {
+        int suffix = 1;
+        String candidate = generateUsername(user.getFirstName(), user.getLastName());
+        String base = candidate;
 
-    public static Long generateTrainerUserId() {
-        return trainerUserId++;
+        while (existsByUsername.test(candidate)) {
+            candidate = base + suffix;
+            suffix++;
+        }
+
+        user.setUsername(candidate);
+        user.setPassword(generateRandomPassword());
     }
 
     public static String generateUsername(String firstName, String lastName) {

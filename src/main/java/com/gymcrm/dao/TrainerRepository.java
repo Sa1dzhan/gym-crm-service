@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class TrainerRepository {
@@ -20,6 +20,7 @@ public class TrainerRepository {
     }
 
     public void create(Trainer trainer) {
+        trainer.setId(Collections.max(storage.getTrainerStorage().keySet()));
         storage.getTrainerStorage().put(trainer.getId(), trainer);
         storage.getTrainerUsernames().put(trainer.getUsername(), trainer.getId());
     }
@@ -38,7 +39,6 @@ public class TrainerRepository {
     }
 
     public boolean existsByUsername(String username) {
-        Map<String, Long> usr = storage.getTrainerUsernames();
         return storage.getTrainerUsernames().containsKey(username);
     }
 }

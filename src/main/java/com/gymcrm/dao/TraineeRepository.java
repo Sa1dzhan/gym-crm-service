@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -18,18 +19,23 @@ public class TraineeRepository {
         this.storage = storage;
     }
 
-    public void create(Trainee trainee) {
+    public Trainee create(Trainee trainee) {
+        trainee.setId(Collections.max(storage.getTraineeStorage().keySet()));
         storage.getTraineeStorage().put(trainee.getId(), trainee);
         storage.getTraineeUsernames().put(trainee.getUsername(), trainee.getId());
+
+        return trainee;
     }
 
     public Trainee read(Long id) {
         return storage.getTraineeStorage().get(id);
     }
 
-    public void update(Trainee trainee) {
+    public Trainee update(Trainee trainee) {
         storage.getTraineeStorage().put(trainee.getId(), trainee);
         storage.getTraineeUsernames().put(trainee.getUsername(), trainee.getId());
+
+        return trainee;
     }
 
     public void delete(Long id) {

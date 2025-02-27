@@ -25,22 +25,8 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public Trainee createTrainee(Trainee trainee) {
-        int suffix = 1;
-        trainee.setId(generateNewId());
         // generate username & password
-        String username = UserCredentialGenerator.generateUsername(
-                trainee.getFirstName(),
-                trainee.getLastName()
-        );
-        String base = username;
-
-        while (traineeRepository.existsByUsername(username)) {
-            username = base + suffix;
-            suffix++;
-        }
-
-        trainee.setUsername(username);
-        trainee.setPassword(UserCredentialGenerator.generateRandomPassword());
+        UserCredentialGenerator.generateUserCredentials(trainee, userName -> traineeRepository.existsByUsername(userName));
 
         traineeRepository.create(trainee);
         logger.info("Created Trainee with ID={}, username={}", trainee.getId(), trainee.getUsername());
@@ -69,9 +55,5 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public List<Trainee> getAllTrainees() {
         return traineeRepository.findAll();
-    }
-
-    private Long generateNewId() {
-        return UserCredentialGenerator.generateTraineeUserId();
     }
 }
