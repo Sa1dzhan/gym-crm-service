@@ -1,44 +1,78 @@
 package com.gymcrm.service.impl;
 
-import com.gymcrm.dao.TrainingRepository;
+import com.gymcrm.dao.*;
+import com.gymcrm.model.Trainee;
+import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
 import com.gymcrm.service.TrainingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.gymcrm.util.Authentication;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class TrainingServiceImpl implements TrainingService {
+    private final TrainingRepository trainingRepository;
+    private final TraineeRepository traineeRepository;
+    private final TrainerRepository trainerRepository;
+    private final UserRepository userRepository;
+    private final TrainingTypeRepository trainingTypeRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(TrainingServiceImpl.class);
+    @Override
+    public Training addTraining(String authUsername, String authPassword, Training training) {
+        Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
 
-    private TrainingRepository trainingRepository;
-    private long currentId = 1;
+        Trainer trainer = trainerRepository.findByUserUsername(training.getTrainer().getUser().getUsername())
+                .orElseThrow(() -> new RuntimeException("Trainer not found"));
+        Trainee trainee = traineeRepository.findByUserUsername(training.getTrainee().getUser().getUsername())
+                .orElseThrow(() -> new RuntimeException("Trainee not found"));
 
-    @Autowired
-    public void setTrainingDao(TrainingRepository trainingRepository) {
-        this.trainingRepository = trainingRepository;
+        if (!trainer.getUser().getIsActive() || !trainee.getUser().getIsActive()) {
+            throw new RuntimeException("Cannot add training for inactive user");
+        }
+
+        trainingTypeRepository.findById(training.getTrainingType().getId())
+                .orElseThrow(() -> new RuntimeException("TrainingType not found"));
+
+        Training saved = trainingRepository.save(training);
+        log.info("Added Training with ID={}, name={}", saved.getId(), saved.getTrainingName());
+        return saved;
     }
 
-    public Training createTraining(Training training) {
-        training.setId(generateNewId());
-        trainingRepository.create(training);
-        logger.info("Created Training with ID={}", training.getId());
-        return training;
-    }
-
+    @Override
     public Training getTraining(Long id) {
-        return trainingRepository.read(id);
+        return trainingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No training found"));
     }
 
+    @Override
     public List<Training> getAllTrainings() {
         return trainingRepository.findAll();
     }
 
-    private Long generateNewId() {
-        return currentId++;
+    @Override
+    public List<Training> getTraineeTrainings(String authUsername, String authPassword,
+                                              String traineeUsername,
+                                              Date fromDate, Date toDate,
+                                              String trainerName, String trainingType) {
+        Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
+
+        return trainingRepository.findTrainingsForTrainee(
+                traineeUsername, fromDate, toDate, trainerName, trainingType);
+    }
+
+    @Override
+    public List<Training> getTrainerTrainings(String authUsername, String authPassword,
+                                              String trainerUsername,
+                                              Date fromDate, Date toDate,
+                                              String traineeName) {
+        Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
+
+        return trainingRepository.findTrainingsForTrainer(
+                trainerUsername, fromDate, toDate, traineeName);
     }
 }

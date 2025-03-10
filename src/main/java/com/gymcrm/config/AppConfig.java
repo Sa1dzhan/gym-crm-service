@@ -8,7 +8,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 @Configuration
 @ComponentScan(basePackages = "com.gymcrm")
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 public class AppConfig {
 
     @Bean

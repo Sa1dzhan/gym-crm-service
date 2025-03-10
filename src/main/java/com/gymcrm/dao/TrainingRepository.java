@@ -1,32 +1,37 @@
 package com.gymcrm.dao;
 
 import com.gymcrm.model.Training;
-import com.gymcrm.storage.InMemoryStorage;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Repository
-public class TrainingRepository {
+public interface TrainingRepository extends JpaRepository<Training, Long> {
+    @Query("SELECT tr FROM Training tr "
+            + "WHERE tr.trainee.user.username = :traineeUsername "
+            + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
+            + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
+            + "AND (:trainerName IS NULL OR LOWER(tr.trainer.user.lastName) LIKE LOWER(CONCAT('%', :trainerName, '%')) "
+            + "     OR LOWER(tr.trainer.user.firstName) LIKE LOWER(CONCAT('%', :trainerName, '%'))) "
+            + "AND (:trainingType IS NULL OR LOWER(tr.trainingType.trainingTypeName) = LOWER(:trainingType))")
+    List<Training> findTrainingsForTrainee(@Param("traineeUsername") String traineeUsername,
+                                           @Param("fromDate") Date fromDate,
+                                           @Param("toDate") Date toDate,
+                                           @Param("trainerName") String trainerName,
+                                           @Param("trainingType") String trainingType);
 
-    private InMemoryStorage storage;
-
-    @Autowired
-    public void setStorage(InMemoryStorage storage) {
-        this.storage = storage;
-    }
-
-    public void create(Training training) {
-        storage.getTrainingStorage().put(training.getId(), training);
-    }
-
-    public Training read(Long id) {
-        return storage.getTrainingStorage().get(id);
-    }
-
-    public List<Training> findAll() {
-        return new ArrayList<>(storage.getTrainingStorage().values());
-    }
+    @Query("SELECT tr FROM Training tr "
+            + "WHERE tr.trainer.user.username = :trainerUsername "
+            + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
+            + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
+            + "AND (:traineeName IS NULL OR LOWER(tr.trainee.user.lastName) LIKE LOWER(CONCAT('%', :traineeName, '%')) "
+            + "     OR LOWER(tr.trainee.user.firstName) LIKE LOWER(CONCAT('%', :traineeName, '%')))")
+    List<Training> findTrainingsForTrainer(@Param("trainerUsername") String trainerUsername,
+                                           @Param("fromDate") Date fromDate,
+                                           @Param("toDate") Date toDate,
+                                           @Param("traineeName") String traineeName);
 }

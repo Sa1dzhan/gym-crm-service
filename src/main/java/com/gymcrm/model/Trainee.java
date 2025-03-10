@@ -1,34 +1,53 @@
 package com.gymcrm.model;
 
-import java.time.LocalDate;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-public class Trainee extends User {
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "trainee")
+@Getter
+@Setter
+@RequiredArgsConstructor
+public class Trainee {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "address")
     private String address;
-    private LocalDate dateOfBirth;
 
-    public Trainee() {
-        super();
-    }
+    @Column(name = "date_of_birth")
+    private Date dateOfBirth;
 
-    public Trainee(Long userId, String firstName, String lastName, String address, LocalDate dateOfBirth) {
-        super(userId, firstName, lastName);
-        this.address = address;
-        this.dateOfBirth = dateOfBirth;
-    }
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public String getAddress() {
-        return address;
-    }
+    @ManyToMany
+    @JoinTable(name = "trainee_trainer",
+            joinColumns = @JoinColumn(name = "trainee_id"),
+            inverseJoinColumns = @JoinColumn(name = "trainer_id")
+    )
+    private Set<Trainer> trainers = new HashSet<>();
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Training> trainings = new LinkedHashSet<>();
 
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+    @Override
+    public String toString() {
+        return "Trainee{" +
+                "id=" + id +
+                ", user=" + user +
+                ", address='" + address + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                '}';
     }
 }

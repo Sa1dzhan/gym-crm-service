@@ -1,20 +1,45 @@
 package com.gymcrm.model;
 
-public class Trainer extends User {
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "trainer")
+@Getter
+@Setter
+@RequiredArgsConstructor
+public class Trainer {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_type_id")
     private TrainingType specialization;
 
-    public Trainer(){}
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public Trainer(Long userId, String firstName, String lastName, TrainingType specialization) {
-        super(userId, firstName, lastName);
-        this.specialization = specialization;
-    }
+    @ManyToMany(mappedBy = "trainers")
+    private Set<Trainee> trainees = new HashSet<>();
 
-    public TrainingType getSpecialization() {
-        return specialization;
-    }
+    @OneToMany(mappedBy = "trainer")
+    private Set<Training> trainings = new LinkedHashSet<>();
 
-    public void setSpecialization(TrainingType specialization) {
-        this.specialization = specialization;
+    @Override
+    public String toString() {
+        return "Trainer{" +
+                "id=" + id +
+                ", user=" + user +
+                ", specialization=" + specialization +
+                '}';
     }
 }
