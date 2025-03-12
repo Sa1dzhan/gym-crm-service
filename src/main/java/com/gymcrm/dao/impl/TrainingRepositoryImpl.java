@@ -7,7 +7,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -32,7 +31,6 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     }
 
     @Override
-    @Transactional
     public Training save(Training entity) {
         if (entity.getId() == null) {
             em.persist(entity);
@@ -44,7 +42,6 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Training> findTrainingsForTrainee(String traineeUsername, Date fromDate, Date toDate, String trainerName, String trainingType) {
         String jpql = "SELECT tr FROM Training tr "
                 + "WHERE tr.trainee.username = :traineeUsername "
@@ -63,7 +60,6 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Training> findTrainingsForTrainer(String trainerUsername, Date fromDate, Date toDate, String traineeName) {
         String jpql = "SELECT tr FROM Training tr "
                 + "WHERE tr.trainer.username = :trainerUsername "

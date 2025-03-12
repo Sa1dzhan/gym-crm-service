@@ -8,6 +8,7 @@ import com.gymcrm.util.UserCredentialGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class TrainerServiceImpl implements TrainerService {
     private final TrainerRepository trainerRepository;
 
     @Override
+    @Transactional
     public Trainer createTrainer(Trainer trainer) {
         UserCredentialGenerator.generateUserCredentials(trainer, trainerRepository::existsByUsername);
 
@@ -29,6 +31,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
+    @Transactional
     public Trainer updateTrainer(Trainer trainer) {
         Authentication.authenticateUser(trainer.getUsername(), trainer.getPassword(), trainerRepository::findByUsername);
 
@@ -48,6 +51,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
+    @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
         Trainer trainer = Authentication.authenticateUser(username, oldPassword, trainerRepository::findByUsername);
         UserCredentialGenerator.checkNewPassword(newPassword);
@@ -59,6 +63,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
+    @Transactional
     public void toggleActive(String username, String password) {
         Trainer trainer = Authentication.authenticateUser(username, password, trainerRepository::findByUsername);
 

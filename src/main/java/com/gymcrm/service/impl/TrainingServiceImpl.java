@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingTypeRepository trainingTypeRepository;
 
     @Override
+    @Transactional
     public Training addTraining(String authUsername, String authPassword, Training training) {
         Trainer trainer = trainerRepository.findByUsername(training.getTrainer().getUsername())
                 .orElseThrow(() -> new RuntimeException("Trainer not found"));
