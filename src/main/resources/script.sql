@@ -11,21 +11,19 @@ CREATE TABLE IF NOT EXISTS user_acc
 
 CREATE TABLE IF NOT EXISTS trainee
 (
-    id            BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    id BIGINT NOT NULL,
     date_of_birth DATE,
     address       TEXT,
-    user_id       BIGINT UNIQUE                       NOT NULL,
     CONSTRAINT trainee_pk PRIMARY KEY (id),
-    CONSTRAINT fk_trainee_user FOREIGN KEY (user_id) REFERENCES user_acc (id) ON DELETE CASCADE
+    CONSTRAINT fk_trainee_user FOREIGN KEY (id) REFERENCES user_acc (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS trainer
 (
-    id               BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-    training_type_id BIGINT UNIQUE                       NOT NULL,
-    user_id          BIGINT UNIQUE                       NOT NULL,
+    id               BIGINT        NOT NULL,
+    training_type_id BIGINT UNIQUE NOT NULL,
     CONSTRAINT trainer_pk PRIMARY KEY (id),
-    CONSTRAINT fk_trainer_user FOREIGN KEY (user_id) REFERENCES user_acc (id) ON DELETE CASCADE
+    CONSTRAINT fk_trainer_user FOREIGN KEY (id) REFERENCES user_acc (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS training_type
@@ -73,4 +71,25 @@ VALUES ('Strength training'),
        ('Mental training'),
        ('Legs training'),
        ('Full-body training');
+
+INSERT INTO user_acc(first_name, last_name, username, password)
+VALUES ('John', 'Doe', 'John.Doe', '3shdasdho1'),
+       ('Jane', ' Smith', 'Jane.Smith', 'fes34affd!'),
+       ('Bob', 'Roberts', 'Bob.Roberts', '!fds%32dax'),
+       ('Daniel', 'Radcliffe', 'Daniel.Radcliffe', 'a54#fdsfds');
+
+INSERT INTO trainee(id, date_of_birth, address)
+VALUES (1, '1990-05-10', '123 Oak St, Apt 4B'),
+       (2, '1985-11-20', '45 Maple Ave');
+
+INSERT INTO trainer(id, training_type_id)
+VALUES (3, 1),
+       (4, 2);
+
+INSERT INTO trainee_trainer(trainee_id, trainer_id)
+VALUES (1, 2),
+       (2, 2);
+
+INSERT INTO training(trainee_id, trainer_id, training_name, training_type_id, training_date, training_duration)
+VALUES (1, 4, 'Intensive', 2, '2025-03-11', 120);
 

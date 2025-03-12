@@ -14,19 +14,12 @@ import java.util.Set;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Trainer {
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@PrimaryKeyJoinColumn(name = "id")
+public class Trainer extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "training_type_id")
     private TrainingType specialization;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @ManyToMany(mappedBy = "trainers")
     private Set<Trainee> trainees = new HashSet<>();
@@ -37,9 +30,8 @@ public class Trainer {
     @Override
     public String toString() {
         return "Trainer{" +
-                "id=" + id +
-                ", user=" + user +
                 ", specialization=" + specialization +
+                super.toString() +
                 '}';
     }
 }

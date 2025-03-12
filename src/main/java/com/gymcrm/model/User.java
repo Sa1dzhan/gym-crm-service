@@ -11,6 +11,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
     @Column(name = "id")

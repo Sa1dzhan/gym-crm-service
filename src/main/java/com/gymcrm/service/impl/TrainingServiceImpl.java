@@ -4,10 +4,12 @@ import com.gymcrm.dao.*;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
+import com.gymcrm.model.User;
 import com.gymcrm.service.TrainingService;
 import com.gymcrm.util.Authentication;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -20,19 +22,19 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingRepository trainingRepository;
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
-    private final UserRepository userRepository;
+    private final UserRepository<User> userRepository;
     private final TrainingTypeRepository trainingTypeRepository;
 
     @Override
     public Training addTraining(String authUsername, String authPassword, Training training) {
         Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
 
-        Trainer trainer = trainerRepository.findByUserUsername(training.getTrainer().getUser().getUsername())
+        Trainer trainer = trainerRepository.findByUsername(training.getTrainer().getUsername())
                 .orElseThrow(() -> new RuntimeException("Trainer not found"));
-        Trainee trainee = traineeRepository.findByUserUsername(training.getTrainee().getUser().getUsername())
+        Trainee trainee = traineeRepository.findByUsername(training.getTrainee().getUsername())
                 .orElseThrow(() -> new RuntimeException("Trainee not found"));
 
-        if (!trainer.getUser().getIsActive() || !trainee.getUser().getIsActive()) {
+        if (!trainer.getIsActive() || !trainee.getIsActive()) {
             throw new RuntimeException("Cannot add training for inactive user");
         }
 
@@ -56,9 +58,9 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     public List<Training> getTraineeTrainings(String authUsername, String authPassword,
-                                              String traineeUsername,
-                                              Date fromDate, Date toDate,
-                                              String trainerName, String trainingType) {
+                                              @NonNull String traineeUsername,
+                                              @NonNull Date fromDate, @NonNull Date toDate,
+                                              @NonNull String trainerName, @NonNull String trainingType) {
         Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
 
         return trainingRepository.findTrainingsForTrainee(
@@ -67,9 +69,9 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     public List<Training> getTrainerTrainings(String authUsername, String authPassword,
-                                              String trainerUsername,
-                                              Date fromDate, Date toDate,
-                                              String traineeName) {
+                                              @NonNull String trainerUsername,
+                                              @NonNull Date fromDate, @NonNull Date toDate,
+                                              @NonNull String traineeName) {
         Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
 
         return trainingRepository.findTrainingsForTrainer(

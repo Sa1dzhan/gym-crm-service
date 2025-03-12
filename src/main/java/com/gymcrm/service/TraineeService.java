@@ -4,7 +4,6 @@ import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 
 import java.util.List;
-import java.util.Set;
 
 public interface TraineeService {
     Trainee createTrainee(Trainee trainee);
@@ -23,5 +22,5 @@ public interface TraineeService {
 
     List<Trainer> getTrainersNotAssigned(String username, String password);
 
-    void updateTrainersList(String username, String password, Set<Long> trainerIds);
+    void updateTrainersList(String username, String password, List<Long> trainerIds);
 }

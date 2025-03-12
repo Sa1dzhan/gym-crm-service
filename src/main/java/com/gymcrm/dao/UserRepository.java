@@ -1,14 +1,21 @@
 package com.gymcrm.dao;
 
 import com.gymcrm.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
+public interface UserRepository<T extends User> {
+    Optional<T> findById(Long id);
 
+    Optional<T> findByUsername(String username);
+
+    List<T> findAll();
+
+    List<T> findAllById(List<Long> idList);
     boolean existsByUsername(String username);
+
+    T save(T entity);
+
+    void delete(T entity);
 }

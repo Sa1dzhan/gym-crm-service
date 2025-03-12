@@ -15,21 +15,14 @@ import java.util.Set;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Trainee {
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@PrimaryKeyJoinColumn(name = "id")
+public class Trainee extends User {
 
     @Column(name = "address")
     private String address;
 
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @ManyToMany
     @JoinTable(name = "trainee_trainer",
@@ -44,10 +37,9 @@ public class Trainee {
     @Override
     public String toString() {
         return "Trainee{" +
-                "id=" + id +
-                ", user=" + user +
                 ", address='" + address + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
+                super.toString() +
                 '}';
     }
 }

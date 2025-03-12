@@ -1,18 +1,16 @@
 package com.gymcrm.util;
 
 import com.gymcrm.model.User;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Random;
 import java.util.function.Predicate;
 
-@Transactional(readOnly = true)
 public class UserCredentialGenerator {
     private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$_#-*";
     private static final int DEFAULT_PASSWORD_LENGTH = 10;
     private static final Random RANDOM = new Random();
 
-    public static void generateUserCredentials(User user, Predicate<String> existsByUsername) {
+    public static <T extends User> void generateUserCredentials(T user, Predicate<String> existsByUsername) {
         if (user.getFirstName() == null || user.getLastName() == null) {
             throw new IllegalArgumentException("Required fields missing");
         }
@@ -48,5 +46,11 @@ public class UserCredentialGenerator {
             sb.append(CHAR_POOL.charAt(RANDOM.nextInt(CHAR_POOL.length())));
         }
         return sb.toString();
+    }
+
+    public static void checkNewPassword(String newPassword) {
+        if (newPassword.length() < 10) {
+            throw new IllegalArgumentException("Password cannot be shorter than 10 characters");
+        }
     }
 }
