@@ -1,12 +1,13 @@
 package com.gymcrm.service.impl;
 
-import com.gymcrm.dao.*;
+import com.gymcrm.dao.TraineeRepository;
+import com.gymcrm.dao.TrainerRepository;
+import com.gymcrm.dao.TrainingRepository;
+import com.gymcrm.dao.TrainingTypeRepository;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
-import com.gymcrm.model.User;
 import com.gymcrm.service.TrainingService;
-import com.gymcrm.util.Authentication;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -22,13 +23,10 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingRepository trainingRepository;
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
-    private final UserRepository<User> userRepository;
     private final TrainingTypeRepository trainingTypeRepository;
 
     @Override
     public Training addTraining(String authUsername, String authPassword, Training training) {
-        Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
-
         Trainer trainer = trainerRepository.findByUsername(training.getTrainer().getUsername())
                 .orElseThrow(() -> new RuntimeException("Trainer not found"));
         Trainee trainee = traineeRepository.findByUsername(training.getTrainee().getUsername())
@@ -61,8 +59,6 @@ public class TrainingServiceImpl implements TrainingService {
                                               @NonNull String traineeUsername,
                                               @NonNull Date fromDate, @NonNull Date toDate,
                                               @NonNull String trainerName, @NonNull String trainingType) {
-        Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
-
         return trainingRepository.findTrainingsForTrainee(
                 traineeUsername, fromDate, toDate, trainerName, trainingType);
     }
@@ -72,8 +68,6 @@ public class TrainingServiceImpl implements TrainingService {
                                               @NonNull String trainerUsername,
                                               @NonNull Date fromDate, @NonNull Date toDate,
                                               @NonNull String traineeName) {
-        Authentication.authenticateUser(authUsername, authPassword, userRepository::findByUsername);
-
         return trainingRepository.findTrainingsForTrainer(
                 trainerUsername, fromDate, toDate, traineeName);
     }

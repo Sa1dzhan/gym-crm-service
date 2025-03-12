@@ -5,6 +5,7 @@ import com.gymcrm.model.Training;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,26 +14,25 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
+@RequiredArgsConstructor
 public class TrainingRepositoryImpl implements TrainingRepository {
     @PersistenceContext
     private EntityManager em;
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Training> findById(Long id) {
         Training training = em.find(Training.class, id);
         return Optional.ofNullable(training);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Training> findAll() {
         String jpql = "SELECT t FROM Training t";
         return em.createQuery(jpql, Training.class).getResultList();
     }
 
     @Override
+    @Transactional
     public Training save(Training entity) {
         if (entity.getId() == null) {
             em.persist(entity);

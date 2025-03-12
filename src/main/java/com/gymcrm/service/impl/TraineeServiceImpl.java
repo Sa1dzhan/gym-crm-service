@@ -10,7 +10,9 @@ import com.gymcrm.util.UserCredentialGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final TrainerRepository trainerRepository;
 
     @Override
+    @Transactional
     public Trainee createTrainee(Trainee trainee) {
         UserCredentialGenerator.generateUserCredentials(trainee, traineeRepository::existsByUsername);
 
@@ -33,6 +36,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
+    @Transactional
     public Trainee updateTrainee(Trainee trainee) {
         Authentication.authenticateUser(trainee.getUsername(), trainee.getPassword(), traineeRepository::findByUsername);
 
@@ -52,6 +56,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
+    @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
         Trainee trainee = Authentication.authenticateUser(username, oldPassword, traineeRepository::findByUsername);
         UserCredentialGenerator.checkNewPassword(newPassword);
@@ -63,6 +68,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
+    @Transactional
     public void toggleActive(String username, String password) {
         Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
@@ -75,6 +81,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
+    @Transactional
     public void deleteTraineeById(Trainee trainee) {
         Authentication.authenticateUser(trainee.getUsername(), trainee.getPassword(), traineeRepository::findByUsername);
 
@@ -83,29 +90,26 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
+    @Transactional
     public void deleteTraineeByUsername(String username, String password) {
-        Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
+        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
-        Trainee trainee = traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Trainee not found"));
         traineeRepository.delete(trainee);
         log.warn("Deleted Trainee with username={}", username);
     }
 
     @Override
     public List<Trainer> getTrainersNotAssigned(String username, String password) {
-        Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
+        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
-        Trainee trainee = traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Trainee not found"));
-
-        List<Trainer> allTrainers = trainerRepository.findAll();
+        List<Trainer> allTrainers = new ArrayList<>(trainerRepository.findAll());
         allTrainers.removeAll(trainee.getTrainers());
 
         return allTrainers;
     }
 
     @Override
+    @Transactional
     public void updateTrainersList(String username, String password, List<Long> trainerIds) {
         Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
