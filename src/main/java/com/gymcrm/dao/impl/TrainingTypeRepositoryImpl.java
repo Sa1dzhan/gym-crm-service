@@ -22,7 +22,6 @@ public class TrainingTypeRepositoryImpl implements TrainingTypeRepository {
 
     @Override
     public List<TrainingType> findAll() {
-        String jpql = "SELECT t FROM Training t";
-        return em.createQuery(jpql, TrainingType.class).getResultList();
+        return em.createNamedQuery("TrainingType.findAll", TrainingType.class).getResultList();
     }
 }

@@ -12,6 +12,7 @@ import org.hibernate.annotations.Immutable;
 @Setter
 @RequiredArgsConstructor
 @Immutable
+@NamedQuery(name = "TrainingType.findAll", query = "SELECT t FROM TrainingType t")
 public class TrainingType {
     @Id
     @Column(name = "id")

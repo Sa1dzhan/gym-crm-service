@@ -15,6 +15,33 @@ import java.util.Set;
 @Setter
 @RequiredArgsConstructor
 @PrimaryKeyJoinColumn(name = "id")
+@NamedQueries({
+        @NamedQuery(
+                name = "Trainer.findByUsername",
+                query = "SELECT t FROM Trainer t WHERE t.username = :username"
+        ),
+        @NamedQuery(
+                name = "Trainer.findAll",
+                query = "SELECT t FROM Trainer t"
+        ),
+        @NamedQuery(
+                name = "Trainer.findAllById",
+                query = "SELECT t FROM Trainer t WHERE t.id IN :ids"
+        ),
+        @NamedQuery(
+                name = "Trainer.existsByUsername",
+                query = "SELECT t FROM Trainer t WHERE t.username = :username"
+        ),
+        @NamedQuery(
+                name = "Trainer.findAllTrainersNotAssigned",
+                query = "SELECT t FROM Trainer t\n" +
+                        "        WHERE t NOT IN (\n" +
+                        "            SELECT tr FROM Trainer tr\n" +
+                        "            JOIN tr.trainees tt\n" +
+                        "            WHERE tt.username = :traineeUsername\n" +
+                        "        )"
+        )
+})
 public class Trainer extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)

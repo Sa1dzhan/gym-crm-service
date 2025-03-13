@@ -28,8 +28,8 @@ public abstract class UserRepositoryImpl<T extends User> implements UserReposito
 
     @Override
     public Optional<T> findByUsername(String username) {
-        String jpql = "SELECT u FROM " + entityClass.getSimpleName() + " u WHERE u.username = :username";
-        TypedQuery<T> query = em.createQuery(jpql, entityClass);
+        String queryName = entityClass.getSimpleName() + ".findByUsername";
+        TypedQuery<T> query = em.createNamedQuery(queryName, entityClass);
         query.setParameter("username", username);
         try {
             T result = query.getSingleResult();
@@ -41,23 +41,23 @@ public abstract class UserRepositoryImpl<T extends User> implements UserReposito
 
     @Override
     public List<T> findAll() {
-        String jpql = "SELECT t FROM " + entityClass.getSimpleName() + " t";
-        TypedQuery<T> query = em.createQuery(jpql, entityClass);
+        String queryName = entityClass.getSimpleName() + ".findAll";
+        TypedQuery<T> query = em.createNamedQuery(queryName, entityClass);
         return query.getResultList();
     }
 
     @Override
     public List<T> findAllById(List<Long> idList) {
-        String jpql = "SELECT u FROM " + entityClass.getSimpleName() + " u WHERE u.id IN :ids";
-        TypedQuery<T> query = em.createQuery(jpql, entityClass);
+        String queryName = entityClass.getSimpleName() + ".findAllById";
+        TypedQuery<T> query = em.createNamedQuery(queryName, entityClass);
         query.setParameter("ids", idList);
         return query.getResultList();
     }
 
     @Override
     public boolean existsByUsername(String username) {
-        String jpql = "SELECT u FROM " + entityClass.getSimpleName() + " u WHERE u.username = :username";
-        TypedQuery<T> query = em.createQuery(jpql, entityClass);
+        String queryName = entityClass.getSimpleName() + ".existsByUsername";
+        TypedQuery<T> query = em.createNamedQuery(queryName, entityClass);
         query.setParameter("username", username);
         try {
             query.getSingleResult();

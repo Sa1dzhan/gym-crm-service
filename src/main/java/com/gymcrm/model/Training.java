@@ -12,6 +12,31 @@ import java.util.Date;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@NamedQueries({
+        @NamedQuery(
+                name = "Training.findAll",
+                query = "SELECT t FROM Training t"
+        ),
+        @NamedQuery(
+                name = "Training.findTrainingsForTrainee",
+                query = "SELECT tr FROM Training tr "
+                        + "WHERE tr.trainee.username = :traineeUsername "
+                        + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
+                        + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
+                        + "AND (:trainerName IS NULL OR (LOWER(tr.trainer.lastName) LIKE LOWER(CONCAT('%', :trainerName, '%')) "
+                        + "     OR LOWER(tr.trainer.firstName) LIKE LOWER(CONCAT('%', :trainerName, '%')))) "
+                        + "AND (:trainingType IS NULL OR LOWER(tr.trainingType.trainingTypeName) = LOWER(:trainingType))"
+        ),
+        @NamedQuery(
+                name = "Training.findTrainingsForTrainer",
+                query = "SELECT tr FROM Training tr "
+                        + "WHERE tr.trainer.username = :trainerUsername "
+                        + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
+                        + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
+                        + "AND (:traineeName IS NULL OR (LOWER(tr.trainee.lastName) LIKE LOWER(CONCAT('%', :traineeName, '%')) "
+                        + "     OR LOWER(tr.trainee.firstName) LIKE LOWER(CONCAT('%', :traineeName, '%'))))"
+        )
+})
 public class Training {
     @Id
     @Column(name = "id")

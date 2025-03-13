@@ -19,13 +19,7 @@ public class TrainerRepositoryImpl extends UserRepositoryImpl<Trainer> implement
         EntityManager em = getEm();
         Class<Trainer> entityClass = getEntityClass();
 
-        String jpql = "SELECT t FROM Trainer t\n" +
-                "        WHERE t NOT IN (\n" +
-                "            SELECT tr FROM Trainer tr\n" +
-                "            JOIN tr.trainees tt\n" +
-                "            WHERE tt.username = :traineeUsername\n" +
-                "        )";
-        TypedQuery<Trainer> query = em.createQuery(jpql, entityClass);
+        TypedQuery<Trainer> query = em.createNamedQuery("Trainer.findAllTrainersNotAssigned", Trainer.class);
         query.setParameter("traineeUsername", traineeUsername);
 
         return query.getResultList();

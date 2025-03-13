@@ -16,6 +16,24 @@ import java.util.Set;
 @Setter
 @RequiredArgsConstructor
 @PrimaryKeyJoinColumn(name = "id")
+@NamedQueries({
+        @NamedQuery(
+                name = "Trainee.findByUsername",
+                query = "SELECT t FROM Trainee t WHERE t.username = :username"
+        ),
+        @NamedQuery(
+                name = "Trainee.findAll",
+                query = "SELECT t FROM Trainee t"
+        ),
+        @NamedQuery(
+                name = "Trainee.findAllById",
+                query = "SELECT t FROM Trainee t WHERE t.id IN :ids"
+        ),
+        @NamedQuery(
+                name = "Trainee.existsByUsername",
+                query = "SELECT t FROM Trainee t WHERE t.username = :username"
+        )
+})
 public class Trainee extends User {
 
     @Column(name = "address", nullable = false)

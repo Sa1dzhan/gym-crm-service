@@ -26,8 +26,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
     @Override
     public List<Training> findAll() {
-        String jpql = "SELECT t FROM Training t";
-        return em.createQuery(jpql, Training.class).getResultList();
+        return em.createNamedQuery("Training.findAll", Training.class).getResultList();
     }
 
     @Override
@@ -43,14 +42,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
     @Override
     public List<Training> findTrainingsForTrainee(String traineeUsername, Date fromDate, Date toDate, String trainerName, String trainingType) {
-        String jpql = "SELECT tr FROM Training tr "
-                + "WHERE tr.trainee.username = :traineeUsername "
-                + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
-                + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
-                + "AND (:trainerName IS NULL OR (LOWER(tr.trainer.lastName) LIKE LOWER(CONCAT('%', :trainerName, '%')) "
-                + "     OR LOWER(tr.trainer.firstName) LIKE LOWER(CONCAT('%', :trainerName, '%')))) "
-                + "AND (:trainingType IS NULL OR LOWER(tr.trainingType.trainingTypeName) = LOWER(:trainingType))";
-        TypedQuery<Training> query = em.createQuery(jpql, Training.class);
+        TypedQuery<Training> query = em.createNamedQuery("Training.findTrainingsForTrainee", Training.class);
         query.setParameter("traineeUsername", traineeUsername);
         query.setParameter("fromDate", fromDate);
         query.setParameter("toDate", toDate);
@@ -61,13 +53,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
     @Override
     public List<Training> findTrainingsForTrainer(String trainerUsername, Date fromDate, Date toDate, String traineeName) {
-        String jpql = "SELECT tr FROM Training tr "
-                + "WHERE tr.trainer.username = :trainerUsername "
-                + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
-                + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
-                + "AND (:traineeName IS NULL OR (LOWER(tr.trainee.lastName) LIKE LOWER(CONCAT('%', :traineeName, '%')) "
-                + "     OR LOWER(tr.trainee.firstName) LIKE LOWER(CONCAT('%', :traineeName, '%'))))";
-        TypedQuery<Training> query = em.createQuery(jpql, Training.class);
+        TypedQuery<Training> query = em.createNamedQuery("Training.findTrainingsForTrainer", Training.class);
         query.setParameter("trainerUsername", trainerUsername);
         query.setParameter("fromDate", fromDate);
         query.setParameter("toDate", toDate);

@@ -7,6 +7,8 @@ import com.gymcrm.service.TraineeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.Date;
+
 @Slf4j
 public class GymCrmApplication {
 
@@ -23,6 +25,8 @@ public class GymCrmApplication {
         t.setFirstName("John");
         t.setLastName("Doe");
         t.setIsActive(true);
+        t.setAddress("Mable Street 12");
+        t.setDateOfBirth(new Date(637329919)); // 1990-03-13
         Trainee saved = traineeService.createTrainee(t);
         System.out.println("Created Trainee with ID=" + saved.getId());
 
