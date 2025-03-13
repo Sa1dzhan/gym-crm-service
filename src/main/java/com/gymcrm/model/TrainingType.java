@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
 
 @Entity
 @Table(name = "training_type")
 @Getter
 @Setter
 @RequiredArgsConstructor
+@Immutable
 public class TrainingType {
     @Id
     @Column(name = "id")

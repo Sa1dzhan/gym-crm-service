@@ -18,10 +18,10 @@ import java.util.Set;
 @PrimaryKeyJoinColumn(name = "id")
 public class Trainee extends User {
 
-    @Column(name = "address")
+    @Column(name = "address", nullable = false)
     private String address;
 
-    @Column(name = "date_of_birth")
+    @Column(name = "date_of_birth", nullable = false)
     private Date dateOfBirth;
 
     @ManyToMany

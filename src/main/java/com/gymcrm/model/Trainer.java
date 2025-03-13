@@ -18,7 +18,7 @@ import java.util.Set;
 public class Trainer extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "training_type_id")
+    @JoinColumn(name = "training_type_id", nullable = false)
     private TrainingType specialization;
 
     @ManyToMany(mappedBy = "trainers")

@@ -14,23 +14,23 @@ import org.hibernate.annotations.ColumnDefault;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name")
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "is_active")
+    @Column(name = "is_active", nullable = false)
     @ColumnDefault("true")
     private Boolean isActive;
 
