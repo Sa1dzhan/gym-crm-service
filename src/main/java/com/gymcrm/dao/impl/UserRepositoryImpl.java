@@ -6,12 +6,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
+@Getter
 public abstract class UserRepositoryImpl<T extends User> implements UserRepository<T> {
     @PersistenceContext
     private EntityManager em;
