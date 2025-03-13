@@ -51,44 +51,34 @@ class TraineeServiceTest {
 
     @Test
     void testCreateTrainee_Success() {
-        // Given
         Trainee newTrainee = new Trainee();
         newTrainee.setFirstName("John");
         newTrainee.setLastName("Doe");
 
-        // Stub the static method generateUserCredentials(...) so it sets username & password
         userCredentialGeneratorMock.when(() ->
                 UserCredentialGenerator.generateUserCredentials(eq(newTrainee), any())
         ).thenAnswer((Answer<Void>) invocation -> {
-            // Simulate what the real method might do
             newTrainee.setUsername("John.Doe");
             newTrainee.setPassword("randomPass123");
             return null;
         });
 
-        // Stub repository save
         when(traineeRepository.save(any(Trainee.class))).thenAnswer(inv -> {
             Trainee t = inv.getArgument(0);
             t.setId(100L);
             return t;
         });
 
-        // When
         Trainee created = traineeService.createTrainee(newTrainee);
 
-        // Then
         assertNotNull(created.getId());
         assertEquals("John.Doe", created.getUsername());
         assertEquals("randomPass123", created.getPassword());
 
         verify(traineeRepository).save(newTrainee);
-        // We do NOT authenticate on createTrainee (by your design).
         authenticationMock.verifyNoInteractions();
     }
 
-    // ------------------------------------------------------------------------------------
-    // 2. updateTrainee
-    // ------------------------------------------------------------------------------------
     @Test
     void testUpdateTrainee_Success() {
         Trainee existing = new Trainee();
@@ -110,7 +100,7 @@ class TraineeServiceTest {
         assertEquals("New Address", updated.getAddress());
         verify(traineeRepository).save(existing);
         authenticationMock.verify(() ->
-                Authentication.authenticateUser("Jane.Smith", "oldPass", traineeRepository::findByUsername));
+                Authentication.authenticateUser(eq("Jane.Smith"), eq("oldPass"), any()));
     }
 
     @Test
@@ -252,12 +242,9 @@ class TraineeServiceTest {
         t.setUsername("delByUsername");
         t.setPassword("p123");
 
-        // Auth
         authenticationMock.when(() ->
-                Authentication.authenticateUser("delByUsername", "p123", traineeRepository::findByUsername)
+                Authentication.authenticateUser(eq("delByUsername"), eq("p123"), any())
         ).thenReturn(t);
-
-        when(traineeRepository.findByUsername("delByUsername")).thenReturn(Optional.of(t));
 
         traineeService.deleteTraineeByUsername("delByUsername", "p123");
 
@@ -266,40 +253,26 @@ class TraineeServiceTest {
 
     @Test
     void testDeleteTraineeByUsername_NotFound() {
-        // Auth success, but trainee not found
-        Trainee dummy = new Trainee();
-        dummy.setUsername("delByUsername");
-        dummy.setPassword("p123");
-
         authenticationMock.when(() ->
-                Authentication.authenticateUser("delByUsername", "p123", traineeRepository::findByUsername)
-        ).thenReturn(dummy);
-
-        when(traineeRepository.findByUsername("delByUsername")).thenReturn(Optional.empty());
+                Authentication.authenticateUser(eq("delByUsername"), eq("p123"), any())
+        ).thenThrow(new RuntimeException("User not found"));
 
         assertThrows(RuntimeException.class, () ->
                 traineeService.deleteTraineeByUsername("delByUsername", "p123"));
     }
 
-    // ------------------------------------------------------------------------------------
-    // 9. getTrainersNotAssigned
-    // ------------------------------------------------------------------------------------
     @Test
     void testGetTrainersNotAssigned_Success() {
-        // Auth
         Trainee t = new Trainee();
         t.setUsername("traineeUser");
         t.setPassword("p");
         t.setIsActive(true);
-        t.setTrainers(new HashSet<>()); // no trainers assigned
+        t.setTrainers(new HashSet<>());
 
         authenticationMock.when(() ->
                 Authentication.authenticateUser("traineeUser", "p", traineeRepository::findByUsername)
         ).thenReturn(t);
 
-        when(traineeRepository.findByUsername("traineeUser")).thenReturn(Optional.of(t));
-
-        // Suppose we have 3 trainers in DB
         Trainer trainer1 = new Trainer();
         trainer1.setUsername("trainer1");
         Trainer trainer2 = new Trainer();
@@ -307,15 +280,11 @@ class TraineeServiceTest {
         Trainer trainer3 = new Trainer();
         trainer3.setUsername("trainer3");
 
-        when(trainerRepository.findAll()).thenReturn(Arrays.asList(trainer1, trainer2, trainer3));
+        when(trainerRepository.findAllTrainersNotAssigned(t.getUsername())).thenReturn(Arrays.asList(trainer1, trainer2, trainer3));
 
-        // When
         List<Trainer> result = traineeService.getTrainersNotAssigned("traineeUser", "p");
 
-        // Then
         assertEquals(3, result.size());
-        verify(trainerRepository).findAll();
-        verify(traineeRepository).findByUsername("traineeUser");
     }
 
     @Test
@@ -331,12 +300,11 @@ class TraineeServiceTest {
                 Authentication.authenticateUser(eq("John.Doe3"), eq("zxcvbnmasd"), any())
         ).thenReturn(t);
 
-        Trainer trainer1 = assigned;
         Trainer trainer2 = new Trainer();
         trainer2.setUsername("trainer2");
         Trainer trainer3 = new Trainer();
         trainer3.setUsername("trainer3");
-        when(trainerRepository.findAll()).thenReturn(Arrays.asList(trainer1, trainer2, trainer3));
+        when(trainerRepository.findAllTrainersNotAssigned(t.getUsername())).thenReturn(Arrays.asList(trainer2, trainer3));
 
         List<Trainer> result = traineeService.getTrainersNotAssigned("John.Doe3", "zxcvbnmasd");
 
@@ -367,10 +335,8 @@ class TraineeServiceTest {
 
         doAnswer(inv -> inv.getArgument(0)).when(traineeRepository).save(any(Trainee.class));
 
-        // When
         traineeService.updateTrainersList("John.Doe3", "zxcvbnmasd", Arrays.asList(10L, 20L));
 
-        // Then
         assertEquals(2, t.getTrainers().size());
         verify(trainerRepository).findAllById(Arrays.asList(10L, 20L));
         verify(traineeRepository).save(t);
