@@ -87,8 +87,8 @@ VALUES (3, 1),
        (4, 2);
 
 INSERT INTO trainee_trainer(trainee_id, trainer_id)
-VALUES (1, 2),
-       (2, 2);
+VALUES (1, 4),
+       (2, 4);
 
 INSERT INTO training(trainee_id, trainer_id, training_name, training_type_id, training_date, training_duration)
 VALUES (1, 4, 'Intensive', 2, '2025-03-11', 120);
