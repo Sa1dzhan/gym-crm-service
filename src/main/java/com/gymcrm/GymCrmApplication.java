@@ -1,41 +1,37 @@
 package com.gymcrm;
 
+
 import com.gymcrm.config.AppConfig;
-import com.gymcrm.facade.GymFacade;
 import com.gymcrm.model.Trainee;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.gymcrm.service.TraineeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.Date;
 
+@Slf4j
 public class GymCrmApplication {
-    private static final Logger logger = LoggerFactory.getLogger(GymCrmApplication.class);
 
     public static void main(String[] args) {
-        logger.info("Starting Gym CRM Application...");
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+        log.info("Starting Gym CRM Application...");
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(AppConfig.class);
 
-        GymFacade facade = context.getBean(GymFacade.class);
+        TraineeService traineeService = context.getBean(TraineeService.class);
 
-        // Example usage
-        Trainee newTrainee = new Trainee();
-        newTrainee.setFirstName("Jane");
-        newTrainee.setLastName("Smith");
-        newTrainee.setAddress("123 Maple St");
-        facade.createTrainee(newTrainee);
+        Trainee t = new Trainee();
+        t.setUsername("john.doe");
+        t.setPassword("secret");
+        t.setFirstName("John");
+        t.setLastName("Doe");
+        t.setIsActive(true);
+        t.setAddress("Mable Street 12");
+        t.setDateOfBirth(new Date(637329919)); // 1990-03-13
+        Trainee saved = traineeService.createTrainee(t);
+        System.out.println("Created Trainee with ID=" + saved.getId());
 
-        // List all
-        facade.getAllTrainees().forEach(t ->
-                logger.info("Trainee: id={}, username={}", t.getId(), t.getUsername())
-        );
-
-        facade.getAllTrainers().forEach(t ->
-                logger.info("Trainer: id={}, username={}", t.getId(), t.getUsername())
-        );
-
-        facade.getAllTrainings().forEach(t ->
-                logger.info("Training: id={}, username={}", t.getId(), t.getTrainingName())
-        );
+        Trainee found = traineeService.getTrainee(saved.getId());
+        System.out.println("Found Trainee username=" + found.getUsername());
 
         context.close();
     }

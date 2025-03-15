@@ -6,90 +6,144 @@ import com.gymcrm.model.Training;
 import com.gymcrm.service.TraineeService;
 import com.gymcrm.service.TrainerService;
 import com.gymcrm.service.TrainingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class GymFacade {
-    private static final Logger logger = LoggerFactory.getLogger(GymFacade.class);
 
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
 
-    public GymFacade(TraineeService traineeService,
-                     TrainerService trainerService,
-                     TrainingService trainingService) {
-        this.traineeService = traineeService;
-        this.trainerService = trainerService;
-        this.trainingService = trainingService;
-    }
-
-    // -- Trainee
-    public Trainee createTrainee(Trainee trainee) {
-        logger.debug("Facade: createTrainee called for firstName={}, lastName={}",
-                trainee.getFirstName(), trainee.getLastName());
+    // -- Trainee operations
+    public Trainee registerTrainee(Trainee trainee) {
         return traineeService.createTrainee(trainee);
     }
 
+
     public Trainee updateTrainee(Trainee trainee) {
-        logger.debug("Facade: updateTrainee called for ID={}", trainee.getId());
         return traineeService.updateTrainee(trainee);
     }
 
-    public void deleteTrainee(Long id) {
-        logger.debug("Facade: deleteTrainee called for ID={}", id);
-        traineeService.deleteTrainee(id);
-    }
 
-    public Trainee getTrainee(Long id) {
-        logger.debug("Facade: getTrainee called for ID={}", id);
+    public Trainee getTraineeById(Long id) {
         return traineeService.getTrainee(id);
     }
 
-    public List<Trainee> getAllTrainees() {
-        logger.debug("Facade: getAllTrainees called");
-        return traineeService.getAllTrainees();
+
+    public Trainee getTraineeByUsername(String username) {
+        return traineeService.getByUsername(username);
     }
 
-    // -- Trainer
-    public Trainer createTrainer(Trainer trainer) {
-        logger.debug("Facade: createTrainer called for firstName={}, lastName={}",
-                trainer.getFirstName(), trainer.getLastName());
+
+    public void changeTraineePassword(String username, String oldPassword, String newPassword) {
+        traineeService.changePassword(username, oldPassword, newPassword);
+    }
+
+
+    public void toggleTraineeActiveStatus(String username, String password) {
+        traineeService.toggleActive(username, password);
+    }
+
+    
+    public void deleteTrainee(Trainee trainee) {
+        traineeService.deleteTraineeById(trainee);
+    }
+
+
+    public void deleteTraineeByUsername(String username, String password) {
+        traineeService.deleteTraineeByUsername(username, password);
+    }
+
+
+    public List<Trainer> getAvailableTrainersForTrainee(String username, String password) {
+        return traineeService.getTrainersNotAssigned(username, password);
+    }
+
+
+    public void updateTraineeTrainers(String username, String password, List<Long> trainerIds) {
+        traineeService.updateTrainersList(username, password, trainerIds);
+    }
+
+
+    // -- Trainer operations
+    public Trainer registerTrainer(Trainer trainer) {
         return trainerService.createTrainer(trainer);
     }
 
-    public Trainer updateTrainer(Trainer trainee) {
-        logger.debug("Facade: updateTrainer called for ID={}", trainee.getId());
-        return trainerService.updateTrainer(trainee);
+
+    public Trainer updateTrainer(Trainer trainer) {
+        return trainerService.updateTrainer(trainer);
     }
 
-    public Trainer getTrainer(Long id) {
-        logger.debug("Facade: getTrainer called for ID={}", id);
+
+    public Trainer getTrainerById(Long id) {
         return trainerService.getTrainer(id);
     }
 
+
+    public Trainer getTrainerByUsername(String username) {
+        return trainerService.getByUsername(username);
+    }
+
+
+    public void changeTrainerPassword(String username, String oldPassword, String newPassword) {
+        trainerService.changePassword(username, oldPassword, newPassword);
+    }
+
+
+    public void toggleTrainerActiveStatus(String username, String password) {
+        trainerService.toggleActive(username, password);
+    }
+
+    
     public List<Trainer> getAllTrainers() {
-        logger.debug("Facade: getAllTrainers called");
         return trainerService.getAllTrainers();
     }
 
-    // -- Training
-    public Training createTraining(Training training) {
-        logger.debug("Facade: createTraining called for name={}", training.getTrainingName());
-        return trainingService.createTraining(training);
+
+    // -- Training operations
+    public Training addTraining(String authUsername, String authPassword, Training training) {
+        return trainingService.addTraining(authUsername, authPassword, training);
     }
 
-    public Training getTraining(Long id) {
-        logger.debug("Facade: getTraining called for ID={}", id);
+
+    public Training getTrainingById(Long id) {
         return trainingService.getTraining(id);
     }
 
+
     public List<Training> getAllTrainings() {
-        logger.debug("Facade: getAllTrainers called");
         return trainingService.getAllTrainings();
+    }
+
+
+    public List<Training> getTraineeTrainings(String authUsername,
+                                              String authPassword,
+                                              String traineeUsername,
+                                              Date fromDate,
+                                              Date toDate,
+                                              String trainerName,
+                                              String trainingType) {
+        return trainingService.getTraineeTrainings(
+                authUsername, authPassword, traineeUsername, fromDate, toDate, trainerName, trainingType);
+    }
+
+
+    public List<Training> getTrainerTrainings(String authUsername,
+                                              String authPassword,
+                                              String trainerUsername,
+                                              Date fromDate,
+                                              Date toDate,
+                                              String traineeName) {
+        return trainingService.getTrainerTrainings(
+                authUsername, authPassword, trainerUsername, fromDate, toDate, traineeName);
     }
 }

@@ -1,14 +1,26 @@
 package com.gymcrm.service;
 
 import com.gymcrm.model.Trainee;
-import org.springframework.stereotype.Service;
+import com.gymcrm.model.Trainer;
 
 import java.util.List;
 
 public interface TraineeService {
     Trainee createTrainee(Trainee trainee);
     Trainee updateTrainee(Trainee trainee);
-    void deleteTrainee(Long id);
+
+    void deleteTraineeById(Trainee trainee);
     Trainee getTrainee(Long id);
-    List<Trainee> getAllTrainees();
+
+    Trainee getByUsername(String username);
+
+    void changePassword(String username, String oldPassword, String newPassword);
+
+    void toggleActive(String username, String password);
+
+    void deleteTraineeByUsername(String username, String password);
+
+    List<Trainer> getTrainersNotAssigned(String username, String password);
+
+    void updateTrainersList(String username, String password, List<Long> trainerIds);
 }

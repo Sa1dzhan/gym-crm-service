@@ -1,4 +1,0 @@
-Trainee,John,Doe,1990-05-10,123 Maple St
-Trainee,Jane,Smith,1985-11-20,456 Oak Ave
-Trainer,Bob,Roberts,Cardio
-Training,1,2,Session1,Strength,2025-02-15,60

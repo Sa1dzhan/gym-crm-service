@@ -1,83 +1,66 @@
 package com.gymcrm.model;
 
-import java.time.LocalDate;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
+import java.util.Date;
+
+@Entity
+@Table(name = "training")
+@Getter
+@Setter
+@RequiredArgsConstructor
+@NamedQueries({
+        @NamedQuery(
+                name = "Training.findAll",
+                query = "SELECT t FROM Training t"
+        ),
+        @NamedQuery(
+                name = "Training.findTrainingsForTrainee",
+                query = "SELECT tr FROM Training tr "
+                        + "WHERE tr.trainee.username = :traineeUsername "
+                        + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
+                        + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
+                        + "AND (:trainerName IS NULL OR (LOWER(tr.trainer.lastName) LIKE LOWER(CONCAT('%', :trainerName, '%')) "
+                        + "     OR LOWER(tr.trainer.firstName) LIKE LOWER(CONCAT('%', :trainerName, '%')))) "
+                        + "AND (:trainingType IS NULL OR LOWER(tr.trainingType.trainingTypeName) = LOWER(:trainingType))"
+        ),
+        @NamedQuery(
+                name = "Training.findTrainingsForTrainer",
+                query = "SELECT tr FROM Training tr "
+                        + "WHERE tr.trainer.username = :trainerUsername "
+                        + "AND (:fromDate IS NULL OR tr.trainingDate >= :fromDate) "
+                        + "AND (:toDate IS NULL OR tr.trainingDate <= :toDate) "
+                        + "AND (:traineeName IS NULL OR (LOWER(tr.trainee.lastName) LIKE LOWER(CONCAT('%', :traineeName, '%')) "
+                        + "     OR LOWER(tr.trainee.firstName) LIKE LOWER(CONCAT('%', :traineeName, '%'))))"
+        )
+})
 public class Training {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long trainerId;
-    private Long traineeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private Trainer trainer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainee_id", nullable = false)
+    private Trainee trainee;
+
+    @Column(name = "training_name", nullable = false)
     private String trainingName;
-    private TrainingType trainingType = new TrainingType();
-    private LocalDate trainingDate;
-    private int trainingDuration;
 
-    public Training(){
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_type_id", nullable = false)
+    private TrainingType trainingType;
 
-    public Training(Long id, Long trainerId, Long traineeId, String trainingName,
-                    String trainingTypeName, LocalDate trainingDate, int trainingDuration) {
-        this.id = id;
-        this.trainerId = trainerId;
-        this.traineeId = traineeId;
-        this.trainingName = trainingName;
-        this.trainingType = new TrainingType(trainingTypeName);
-        this.trainingDate = trainingDate;
-        this.trainingDuration = trainingDuration;
-    }
+    @Column(name = "training_date", nullable = false)
+    private Date trainingDate;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getTrainerId() {
-        return trainerId;
-    }
-
-    public void setTrainerId(Long trainerId) {
-        this.trainerId = trainerId;
-    }
-
-    public Long getTraineeId() {
-        return traineeId;
-    }
-
-    public void setTraineeId(Long traineeId) {
-        this.traineeId = traineeId;
-    }
-
-    public String getTrainingName() {
-        return trainingName;
-    }
-
-    public void setTrainingName(String trainingName) {
-        this.trainingName = trainingName;
-    }
-
-    public String getTrainingType() {
-        return trainingType.getName();
-    }
-
-    public void setTrainingType(String trainingTypeName) {
-        this.trainingType.setName(trainingTypeName);
-    }
-
-    public LocalDate getTrainingDate() {
-        return trainingDate;
-    }
-
-    public void setTrainingDate(LocalDate trainingDate) {
-        this.trainingDate = trainingDate;
-    }
-
-    public int getTrainingDuration() {
-        return trainingDuration;
-    }
-
-    public void setTrainingDuration(int trainingDuration) {
-        this.trainingDuration = trainingDuration;
-    }
+    @Column(name = "training_duration", nullable = false)
+    private Long trainingDuration;
 }

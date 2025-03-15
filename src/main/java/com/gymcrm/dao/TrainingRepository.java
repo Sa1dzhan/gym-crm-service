@@ -1,32 +1,19 @@
 package com.gymcrm.dao;
 
 import com.gymcrm.model.Training;
-import com.gymcrm.storage.InMemoryStorage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-@Repository
-public class TrainingRepository {
+public interface TrainingRepository {
+    Optional<Training> findById(Long id);
 
-    private InMemoryStorage storage;
+    List<Training> findAll();
 
-    @Autowired
-    public void setStorage(InMemoryStorage storage) {
-        this.storage = storage;
-    }
+    Training save(Training entity);
 
-    public void create(Training training) {
-        storage.getTrainingStorage().put(training.getId(), training);
-    }
+    List<Training> findTrainingsForTrainee(String traineeUsername, Date fromDate, Date toDate, String trainerName, String trainingType);
 
-    public Training read(Long id) {
-        return storage.getTrainingStorage().get(id);
-    }
-
-    public List<Training> findAll() {
-        return new ArrayList<>(storage.getTrainingStorage().values());
-    }
+    List<Training> findTrainingsForTrainer(String trainerUsername, Date fromDate, Date toDate, String traineeName);
 }

@@ -1,19 +1,24 @@
 package com.gymcrm.model;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Immutable;
+
+@Entity
+@Table(name = "training_type")
+@Getter
+@Setter
+@RequiredArgsConstructor
+@Immutable
+@NamedQuery(name = "TrainingType.findAll", query = "SELECT t FROM TrainingType t")
 public class TrainingType {
-    private String name;
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public TrainingType(){}
-
-    public TrainingType(String trainingName){
-        this.name = trainingName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    @Column(name = "training_type_name")
+    private String trainingTypeName;
 }

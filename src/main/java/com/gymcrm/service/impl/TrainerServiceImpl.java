@@ -3,48 +3,78 @@ package com.gymcrm.service.impl;
 import com.gymcrm.dao.TrainerRepository;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.TrainerService;
+import com.gymcrm.util.Authentication;
 import com.gymcrm.util.UserCredentialGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class TrainerServiceImpl implements TrainerService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrainerServiceImpl.class);
-
-    private TrainerRepository trainerRepository;
-
-    @Autowired
-    public void setTrainerDao(TrainerRepository trainerRepository) {
-        this.trainerRepository = trainerRepository;
-    }
+    private final TrainerRepository trainerRepository;
 
     @Override
+    @Transactional
     public Trainer createTrainer(Trainer trainer) {
-        // generate username & password
-        UserCredentialGenerator.generateUserCredentials(trainer, userName -> trainerRepository.existsByUsername(userName));
+        UserCredentialGenerator.generateUserCredentials(trainer, trainerRepository::existsByUsername);
 
-        trainerRepository.create(trainer);
-        logger.info("Created Trainer with ID={}, username={}", trainer.getId(), trainer.getUsername());
+        Trainer savedTrainee = trainerRepository.save(trainer);
+        log.info("Created Trainer with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
 
-        return trainer;
+        return savedTrainee;
     }
 
     @Override
+    @Transactional
     public Trainer updateTrainer(Trainer trainer) {
-        trainerRepository.update(trainer);
-        logger.info("Updated Trainer with ID={}", trainer.getId());
-        return trainer;
+        Authentication.authenticateUser(trainer.getUsername(), trainer.getPassword(), trainerRepository::findByUsername);
+
+        Trainer savedTrainer = trainerRepository.save(trainer);
+        log.info("Updated {}", savedTrainer);
+        return savedTrainer;
     }
 
     @Override
     public Trainer getTrainer(Long id) {
-        return trainerRepository.read(id);
+        return trainerRepository.findById(id).orElseThrow(() -> new RuntimeException("No trainer found"));
     }
+
+    @Override
+    public Trainer getByUsername(String username) {
+        return trainerRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("No trainee with username " + username + " found"));
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(String username, String oldPassword, String newPassword) {
+        Trainer trainer = Authentication.authenticateUser(username, oldPassword, trainerRepository::findByUsername);
+        UserCredentialGenerator.checkNewPassword(newPassword);
+
+        trainer.setPassword(newPassword);
+        trainerRepository.save(trainer);
+
+        log.info("Update password for {}", username);
+    }
+
+    @Override
+    @Transactional
+    public void toggleActive(String username, String password) {
+        Trainer trainer = Authentication.authenticateUser(username, password, trainerRepository::findByUsername);
+
+        Boolean current = trainer.getIsActive();
+        trainer.setIsActive(!current);
+        trainerRepository.save(trainer);
+
+        log.info("Username = {} toggled from {} to {}",
+                username, current, !current);
+    }
+
 
     @Override
     public List<Trainer> getAllTrainers() {
