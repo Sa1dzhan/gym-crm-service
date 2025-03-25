@@ -50,7 +50,7 @@ public class UserCredentialGenerator {
 
     public static void checkNewPassword(String newPassword) {
         if (newPassword.length() < 10) {
-            throw new IllegalArgumentException("Password cannot be shorter than 10 characters");
+            throw new RuntimeException("Password cannot be shorter than 10 characters");
         }
     }
 }

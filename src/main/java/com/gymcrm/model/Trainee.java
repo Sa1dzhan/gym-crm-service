@@ -26,8 +26,8 @@ import java.util.Set;
                 query = "SELECT t FROM Trainee t"
         ),
         @NamedQuery(
-                name = "Trainee.findAllById",
-                query = "SELECT t FROM Trainee t WHERE t.id IN :ids"
+                name = "Trainee.findAllByUsername",
+                query = "SELECT t FROM Trainee t WHERE t.username IN :usernames"
         ),
         @NamedQuery(
                 name = "Trainee.existsByUsername",
@@ -36,10 +36,10 @@ import java.util.Set;
 })
 public class Trainee extends User {
 
-    @Column(name = "address", nullable = false)
+    @Column(name = "address")
     private String address;
 
-    @Column(name = "date_of_birth", nullable = false)
+    @Column(name = "date_of_birth")
     private Date dateOfBirth;
 
     @ManyToMany

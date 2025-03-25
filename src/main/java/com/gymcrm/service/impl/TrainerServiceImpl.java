@@ -1,6 +1,11 @@
 package com.gymcrm.service.impl;
 
+import com.gymcrm.converter.Converter;
 import com.gymcrm.dao.TrainerRepository;
+import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
+import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
+import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.TrainerService;
 import com.gymcrm.util.Authentication;
@@ -18,36 +23,47 @@ import java.util.List;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerRepository trainerRepository;
+    private final Converter converter;
 
     @Override
     @Transactional
-    public Trainer createTrainer(Trainer trainer) {
+    public AuthenticatedRequestDto createTrainer(TrainerCreateRequestDto dto) {
+        Trainer trainer = converter.toEntity(dto);
         UserCredentialGenerator.generateUserCredentials(trainer, trainerRepository::existsByUsername);
 
         Trainer savedTrainee = trainerRepository.save(trainer);
         log.info("Created Trainer with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
 
-        return savedTrainee;
+        return converter.toRegisteredDto(savedTrainee);
+    }
+
+    @Override
+    public void login(String username, String password) {
+        Authentication.authenticateUser(username, password, trainerRepository::findByUsername);
     }
 
     @Override
     @Transactional
-    public Trainer updateTrainer(Trainer trainer) {
+    public TrainerProfileResponseDto updateTrainer(TrainerUpdateRequestDto dto) {
+        Trainer trainer = converter.toEntity(dto);
         Authentication.authenticateUser(trainer.getUsername(), trainer.getPassword(), trainerRepository::findByUsername);
 
         Trainer savedTrainer = trainerRepository.save(trainer);
         log.info("Updated {}", savedTrainer);
-        return savedTrainer;
+        return converter.toProfileDTO(savedTrainer);
     }
 
     @Override
-    public Trainer getTrainer(Long id) {
-        return trainerRepository.findById(id).orElseThrow(() -> new RuntimeException("No trainer found"));
+    public TrainerProfileResponseDto getTrainer(Long id) {
+        return converter.toProfileDTO(
+                trainerRepository.findById(id).orElseThrow(() -> new RuntimeException("No trainer found"))
+        );
     }
 
     @Override
-    public Trainer getByUsername(String username) {
-        return trainerRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("No trainee with username " + username + " found"));
+    public TrainerProfileResponseDto getByUsername(String username, String password) {
+        Trainer trainer = Authentication.authenticateUser(username, password, trainerRepository::findByUsername);
+        return converter.toProfileDTO(trainer);
     }
 
     @Override

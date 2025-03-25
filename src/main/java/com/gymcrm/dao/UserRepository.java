@@ -12,7 +12,8 @@ public interface UserRepository<T extends User> {
 
     List<T> findAll();
 
-    List<T> findAllById(List<Long> idList);
+    List<T> findAllByUsername(List<String> usernameList);
+
     boolean existsByUsername(String username);
 
     T save(T entity);

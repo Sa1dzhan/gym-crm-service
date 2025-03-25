@@ -1,18 +1,27 @@
 package com.gymcrm.service;
 
+import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
+import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
+import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
 import com.gymcrm.model.Trainer;
 
 import java.util.List;
 
 public interface TrainerService {
-    Trainer createTrainer(Trainer trainer);
-    Trainer updateTrainer(Trainer trainer);
-    Trainer getTrainer(Long id);
+    AuthenticatedRequestDto createTrainer(TrainerCreateRequestDto trainer);
 
-    Trainer getByUsername(String username);
+    void login(String username, String password);
+
+    TrainerProfileResponseDto updateTrainer(TrainerUpdateRequestDto trainer);
+
+    TrainerProfileResponseDto getTrainer(Long id);
+
+    TrainerProfileResponseDto getByUsername(String username, String password);
 
     void changePassword(String username, String oldPassword, String newPassword);
 
     void toggleActive(String username, String password);
+
     List<Trainer> getAllTrainers();
 }

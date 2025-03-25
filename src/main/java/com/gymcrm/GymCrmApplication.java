@@ -1,39 +1,33 @@
 package com.gymcrm;
 
 
-import com.gymcrm.config.AppConfig;
-import com.gymcrm.model.Trainee;
-import com.gymcrm.service.TraineeService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.Date;
+import java.text.NumberFormat;
 
 @Slf4j
+@SpringBootApplication
 public class GymCrmApplication {
 
     public static void main(String[] args) {
-        log.info("Starting Gym CRM Application...");
-        AnnotationConfigApplicationContext context =
-                new AnnotationConfigApplicationContext(AppConfig.class);
+        SpringApplication.run(GymCrmApplication.class, args);
 
-        TraineeService traineeService = context.getBean(TraineeService.class);
+        Runtime runtime = Runtime.getRuntime();
 
-        Trainee t = new Trainee();
-        t.setUsername("john.doe");
-        t.setPassword("secret");
-        t.setFirstName("John");
-        t.setLastName("Doe");
-        t.setIsActive(true);
-        t.setAddress("Mable Street 12");
-        t.setDateOfBirth(new Date(637329919)); // 1990-03-13
-        Trainee saved = traineeService.createTrainee(t);
-        System.out.println("Created Trainee with ID=" + saved.getId());
+        final NumberFormat format = NumberFormat.getInstance();
+        final long maxMemory = runtime.maxMemory();
+        final long allocatedMemory = runtime.totalMemory();
+        final long freeMemory = runtime.freeMemory();
+        final long mb = 1024 * 1024;
+        final String mega = " MB";
 
-        Trainee found = traineeService.getTrainee(saved.getId());
-        System.out.println("Found Trainee username=" + found.getUsername());
-
-        context.close();
+        log.info("========================== Memory Info ==========================");
+        log.info("Free memory: " + format.format(freeMemory / mb) + mega);
+        log.info("Allocated memory: " + format.format(allocatedMemory / mb) + mega);
+        log.info("Max memory: " + format.format(maxMemory / mb) + mega);
+        log.info("Total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / mb) + mega);
     }
 }
 
