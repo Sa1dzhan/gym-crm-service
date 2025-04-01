@@ -1,7 +1,15 @@
 package com.gymcrm.service.impl;
 
+import com.gymcrm.converter.TraineeMapper;
+import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TraineeRepository;
 import com.gymcrm.dao.TrainerRepository;
+import com.gymcrm.dto.UserCreatedResponseDto;
+import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
+import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
+import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
+import com.gymcrm.dto.trainee.TraineeUpdateRequestDto;
+import com.gymcrm.dto.trainer.TrainerShortProfileDto;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.TraineeService;
@@ -14,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,36 +30,48 @@ import java.util.Set;
 public class TraineeServiceImpl implements TraineeService {
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
+    private final TraineeMapper traineeMapper;
+    private final TrainerMapper trainerMapper;
 
     @Override
     @Transactional
-    public Trainee createTrainee(Trainee trainee) {
+    public UserCreatedResponseDto createTrainee(TraineeCreateRequestDto dto) {
+        Trainee trainee = traineeMapper.toEntity(dto);
         UserCredentialGenerator.generateUserCredentials(trainee, traineeRepository::existsByUsername);
 
         Trainee savedTrainee = traineeRepository.save(trainee);
         log.info("Created Trainee with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
 
-        return savedTrainee;
+        return traineeMapper.toRegisteredDto(savedTrainee);
+    }
+
+    @Override
+    public void login(String username, String password) {
+        Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
     }
 
     @Override
     @Transactional
-    public Trainee updateTrainee(Trainee trainee) {
-        Authentication.authenticateUser(trainee.getUsername(), trainee.getPassword(), traineeRepository::findByUsername);
+    public TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto dto) {
+        Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
+        Trainee updatedTrainee = traineeMapper.toEntity(dto);
 
-        Trainee savedTrainee = traineeRepository.save(trainee);
+        Trainee savedTrainee = traineeRepository.save(updatedTrainee);
         log.info("Updated {}", savedTrainee);
-        return trainee;
+        return traineeMapper.toProfileDTO(updatedTrainee);
     }
 
     @Override
-    public Trainee getTrainee(Long id) {
-        return traineeRepository.findById(id).orElseThrow(() -> new RuntimeException("No such trainee found"));
+    public TraineeProfileResponseDto getTrainee(Long id) {
+        return traineeMapper.toProfileDTO(
+                traineeRepository.findById(id).orElseThrow(() -> new RuntimeException("No such trainee found"))
+        );
     }
 
     @Override
-    public Trainee getByUsername(String username) {
-        return traineeRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("No trainee with username " + username + " found"));
+    public TraineeProfileResponseDto getByUsername(String username, String password) {
+        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
+        return traineeMapper.toProfileDTO(trainee);
     }
 
     @Override
@@ -81,15 +101,6 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     @Transactional
-    public void deleteTraineeById(Trainee trainee) {
-        Authentication.authenticateUser(trainee.getUsername(), trainee.getPassword(), traineeRepository::findByUsername);
-
-        traineeRepository.delete(trainee);
-        log.warn("Deleted Trainee with username = {}", trainee.getUsername());
-    }
-
-    @Override
-    @Transactional
     public void deleteTraineeByUsername(String username, String password) {
         Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
@@ -98,20 +109,27 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public List<Trainer> getTrainersNotAssigned(String username, String password) {
+    public TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username, String password) {
         Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
-        return trainerRepository.findAllTrainersNotAssigned(username);
+        return new TraineeNotAssignedTrainersDto(
+                trainerRepository.findAllTrainersNotAssigned(username)
+                        .stream()
+                        .map(trainerMapper::toShortProfileDto)
+                        .collect(Collectors.toList())
+        );
     }
 
     @Override
     @Transactional
-    public void updateTrainersList(String username, String password, List<Long> trainerIds) {
+    public List<TrainerShortProfileDto> updateTrainersList(String username, String password, List<String> trainerUsernames) {
         Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
 
-        Set<Trainer> newTrainers = new HashSet<>(trainerRepository.findAllById(trainerIds));
-        trainee.setTrainers(newTrainers);
+        List<Trainer> trainersList = trainerRepository.findAllByUsername(trainerUsernames);
+        trainee.setTrainers(new HashSet<>(trainersList));
         traineeRepository.save(trainee);
         log.info("Updated trainers for Trainee username={}", username);
+
+        return trainersList.stream().map(trainerMapper::toShortProfileDto).collect(Collectors.toList());
     }
 }

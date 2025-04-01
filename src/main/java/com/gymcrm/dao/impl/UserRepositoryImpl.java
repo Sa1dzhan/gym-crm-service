@@ -47,10 +47,10 @@ public abstract class UserRepositoryImpl<T extends User> implements UserReposito
     }
 
     @Override
-    public List<T> findAllById(List<Long> idList) {
-        String queryName = entityClass.getSimpleName() + ".findAllById";
+    public List<T> findAllByUsername(List<String> usernameList) {
+        String queryName = entityClass.getSimpleName() + ".findAllByUsername";
         TypedQuery<T> query = em.createNamedQuery(queryName, entityClass);
-        query.setParameter("ids", idList);
+        query.setParameter("usernames", usernameList);
         return query.getResultList();
     }
 

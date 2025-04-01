@@ -1,18 +1,24 @@
 package com.gymcrm.service;
 
-import com.gymcrm.model.Trainee;
-import com.gymcrm.model.Trainer;
+import com.gymcrm.dto.UserCreatedResponseDto;
+import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
+import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
+import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
+import com.gymcrm.dto.trainee.TraineeUpdateRequestDto;
+import com.gymcrm.dto.trainer.TrainerShortProfileDto;
 
 import java.util.List;
 
 public interface TraineeService {
-    Trainee createTrainee(Trainee trainee);
-    Trainee updateTrainee(Trainee trainee);
+    UserCreatedResponseDto createTrainee(TraineeCreateRequestDto trainee);
 
-    void deleteTraineeById(Trainee trainee);
-    Trainee getTrainee(Long id);
+    void login(String username, String password);
 
-    Trainee getByUsername(String username);
+    TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto trainee);
+
+    TraineeProfileResponseDto getTrainee(Long id);
+
+    TraineeProfileResponseDto getByUsername(String username, String password);
 
     void changePassword(String username, String oldPassword, String newPassword);
 
@@ -20,7 +26,7 @@ public interface TraineeService {
 
     void deleteTraineeByUsername(String username, String password);
 
-    List<Trainer> getTrainersNotAssigned(String username, String password);
+    TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username, String password);
 
-    void updateTrainersList(String username, String password, List<Long> trainerIds);
+    List<TrainerShortProfileDto> updateTrainersList(String username, String password, List<String> trainerUsernames);
 }

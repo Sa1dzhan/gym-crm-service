@@ -1,22 +1,17 @@
 package com.gymcrm.service;
 
-import com.gymcrm.model.Training;
+import com.gymcrm.dto.trainee.AddTrainingRequestDto;
+import com.gymcrm.dto.training.TraineeTrainingsListRequestDto;
+import com.gymcrm.dto.training.TraineeTrainingsListResponseDto;
+import com.gymcrm.dto.training.TrainerTrainingsListRequestDto;
+import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
 
-import java.util.Date;
 import java.util.List;
 
 public interface TrainingService {
-    Training addTraining(String authUsername, String authPassword, Training training);
-    Training getTraining(Long id);
-    List<Training> getAllTrainings();
+    void addTraining(AddTrainingRequestDto request);
 
-    List<Training> getTraineeTrainings(String authUsername, String authPassword,
-                                       String traineeUsername,
-                                       Date fromDate, Date toDate,
-                                       String trainerName, String trainingType);
+    List<TraineeTrainingsListResponseDto> getTraineeTrainings(TraineeTrainingsListRequestDto dto);
 
-    List<Training> getTrainerTrainings(String authUsername, String authPassword,
-                                       String trainerUsername,
-                                       Date fromDate, Date toDate,
-                                       String traineeName);
+    List<TrainerTrainingsListResponseDto> getTrainerTrainings(TrainerTrainingsListRequestDto dto);
 }
