@@ -1,9 +1,10 @@
 package com.gymcrm.service.impl;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TraineeMapper;
+import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TraineeRepository;
 import com.gymcrm.dao.TrainerRepository;
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
 import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
@@ -29,18 +30,19 @@ import java.util.stream.Collectors;
 public class TraineeServiceImpl implements TraineeService {
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
-    private final Converter converter;
+    private final TraineeMapper traineeMapper;
+    private final TrainerMapper trainerMapper;
 
     @Override
     @Transactional
-    public AuthenticatedRequestDto createTrainee(TraineeCreateRequestDto dto) {
-        Trainee trainee = converter.toEntity(dto);
+    public UserCreatedResponseDto createTrainee(TraineeCreateRequestDto dto) {
+        Trainee trainee = traineeMapper.toEntity(dto);
         UserCredentialGenerator.generateUserCredentials(trainee, traineeRepository::existsByUsername);
 
         Trainee savedTrainee = traineeRepository.save(trainee);
         log.info("Created Trainee with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
 
-        return converter.toRegisteredDto(savedTrainee);
+        return traineeMapper.toRegisteredDto(savedTrainee);
     }
 
     @Override
@@ -52,16 +54,16 @@ public class TraineeServiceImpl implements TraineeService {
     @Transactional
     public TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto dto) {
         Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
-        Trainee updatedTrainee = converter.toEntity(dto);
+        Trainee updatedTrainee = traineeMapper.toEntity(dto);
 
         Trainee savedTrainee = traineeRepository.save(updatedTrainee);
         log.info("Updated {}", savedTrainee);
-        return converter.toProfileDTO(updatedTrainee);
+        return traineeMapper.toProfileDTO(updatedTrainee);
     }
 
     @Override
     public TraineeProfileResponseDto getTrainee(Long id) {
-        return converter.toProfileDTO(
+        return traineeMapper.toProfileDTO(
                 traineeRepository.findById(id).orElseThrow(() -> new RuntimeException("No such trainee found"))
         );
     }
@@ -69,7 +71,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public TraineeProfileResponseDto getByUsername(String username, String password) {
         Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
-        return converter.toProfileDTO(trainee);
+        return traineeMapper.toProfileDTO(trainee);
     }
 
     @Override
@@ -113,7 +115,7 @@ public class TraineeServiceImpl implements TraineeService {
         return new TraineeNotAssignedTrainersDto(
                 trainerRepository.findAllTrainersNotAssigned(username)
                         .stream()
-                        .map(converter::toShortProfileDto)
+                        .map(trainerMapper::toShortProfileDto)
                         .collect(Collectors.toList())
         );
     }
@@ -128,6 +130,6 @@ public class TraineeServiceImpl implements TraineeService {
         traineeRepository.save(trainee);
         log.info("Updated trainers for Trainee username={}", username);
 
-        return trainersList.stream().map(converter::toShortProfileDto).collect(Collectors.toList());
+        return trainersList.stream().map(trainerMapper::toShortProfileDto).collect(Collectors.toList());
     }
 }

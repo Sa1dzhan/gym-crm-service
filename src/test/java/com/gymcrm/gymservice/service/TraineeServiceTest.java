@@ -1,9 +1,10 @@
 package com.gymcrm.gymservice.service;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TraineeMapper;
+import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TraineeRepository;
 import com.gymcrm.dao.TrainerRepository;
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
 import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
@@ -43,7 +44,10 @@ class TraineeServiceTest {
     private TrainerRepository trainerRepository;
 
     @Mock
-    private Converter converter;
+    private TraineeMapper traineeMapper;
+
+    @Mock
+    private TrainerMapper trainerMapper;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;
@@ -73,7 +77,7 @@ class TraineeServiceTest {
         traineeEntity.setFirstName("John");
         traineeEntity.setLastName("Doe");
 
-        when(converter.toEntity(any(TraineeCreateRequestDto.class))).thenReturn(traineeEntity);
+        when(traineeMapper.toEntity(any(TraineeCreateRequestDto.class))).thenReturn(traineeEntity);
 
         userCredentialGeneratorMock.when(() ->
                 UserCredentialGenerator.generateUserCredentials(eq(traineeEntity), any())
@@ -89,12 +93,12 @@ class TraineeServiceTest {
             return t;
         });
 
-        AuthenticatedRequestDto authDto = new AuthenticatedRequestDto();
+        UserCreatedResponseDto authDto = new UserCreatedResponseDto();
         authDto.setUsername("John.Doe");
 
-        when(converter.toRegisteredDto(any(Trainee.class))).thenReturn(authDto);
+        when(traineeMapper.toRegisteredDto(any(Trainee.class))).thenReturn(authDto);
 
-        AuthenticatedRequestDto result = traineeService.createTrainee(createDto);
+        UserCreatedResponseDto result = traineeService.createTrainee(createDto);
 
         assertEquals("John.Doe", result.getUsername());
         verify(traineeRepository).save(traineeEntity);
@@ -123,7 +127,7 @@ class TraineeServiceTest {
         updatedTrainee.setAddress("New Address");
         updatedTrainee.setIsActive(true);
 
-        when(converter.toEntity(any(TraineeUpdateRequestDto.class))).thenReturn(updatedTrainee);
+        when(traineeMapper.toEntity(any(TraineeUpdateRequestDto.class))).thenReturn(updatedTrainee);
 
         when(traineeRepository.save(any(Trainee.class))).thenReturn(updatedTrainee);
 
@@ -131,7 +135,7 @@ class TraineeServiceTest {
         profileDto.setUsername("Jane.Smith");
         profileDto.setAddress("New Address");
 
-        when(converter.toProfileDTO(any(Trainee.class))).thenReturn(profileDto);
+        when(traineeMapper.toProfileDTO(any(Trainee.class))).thenReturn(profileDto);
 
         TraineeProfileResponseDto result = traineeService.updateTrainee(updateDto);
 
@@ -167,7 +171,7 @@ class TraineeServiceTest {
         profileDto.setId(300L);
         profileDto.setUsername("johnny");
 
-        when(converter.toProfileDTO(any(Trainee.class))).thenReturn(profileDto);
+        when(traineeMapper.toProfileDTO(any(Trainee.class))).thenReturn(profileDto);
 
         TraineeProfileResponseDto result = traineeService.getTrainee(300L);
 
@@ -197,7 +201,7 @@ class TraineeServiceTest {
         TraineeProfileResponseDto profileDto = new TraineeProfileResponseDto();
         profileDto.setUsername(username);
 
-        when(converter.toProfileDTO(traineeEntity)).thenReturn(profileDto);
+        when(traineeMapper.toProfileDTO(traineeEntity)).thenReturn(profileDto);
 
         TraineeProfileResponseDto result = traineeService.getByUsername(username, password);
         assertEquals(username, result.getUsername());
@@ -327,9 +331,9 @@ class TraineeServiceTest {
         TrainerShortProfileDto dto3 = new TrainerShortProfileDto();
         dto3.setUsername("trainer3");
 
-        when(converter.toShortProfileDto(trainer1)).thenReturn(dto1);
-        when(converter.toShortProfileDto(trainer2)).thenReturn(dto2);
-        when(converter.toShortProfileDto(trainer3)).thenReturn(dto3);
+        when(trainerMapper.toShortProfileDto(trainer1)).thenReturn(dto1);
+        when(trainerMapper.toShortProfileDto(trainer2)).thenReturn(dto2);
+        when(trainerMapper.toShortProfileDto(trainer3)).thenReturn(dto3);
 
         TraineeNotAssignedTrainersDto result = traineeService.getTrainersNotAssigned(username, password);
         assertEquals(3, result.getTrainers().size());
@@ -365,8 +369,8 @@ class TraineeServiceTest {
         TrainerShortProfileDto dtoB = new TrainerShortProfileDto();
         dtoB.setUsername("B");
 
-        when(converter.toShortProfileDto(trainerA)).thenReturn(dtoA);
-        when(converter.toShortProfileDto(trainerB)).thenReturn(dtoB);
+        when(trainerMapper.toShortProfileDto(trainerA)).thenReturn(dtoA);
+        when(trainerMapper.toShortProfileDto(trainerB)).thenReturn(dtoB);
 
         List<TrainerShortProfileDto> result = traineeService.updateTrainersList(username, password, trainerUsernames);
 

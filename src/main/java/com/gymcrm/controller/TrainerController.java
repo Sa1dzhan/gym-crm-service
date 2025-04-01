@@ -1,6 +1,6 @@
 package com.gymcrm.controller;
 
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @Api(tags = "Trainer")
 @RestController
@@ -26,23 +24,20 @@ public class TrainerController {
     @ApiOperation("Trainer Registration")
     @PostMapping("/register")
     public ResponseEntity<?> createTrainer(@RequestBody TrainerCreateRequestDto dto) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] POST /api/trainer/register - firstName={}, lastName={}",
-                transactionId, dto.getFirstName(), dto.getLastName());
+        log.info("POST /api/trainer/register - firstName={}, lastName={}", dto.getFirstName(), dto.getLastName());
 
-        AuthenticatedRequestDto response = trainerService.createTrainer(dto);
-        log.info("Transaction {} - POST /api/trainer/register completed successfully", transactionId);
+        UserCreatedResponseDto response = trainerService.createTrainer(dto);
+        log.info("POST /api/trainer/register completed successfully");
         return ResponseEntity.ok(response);
     }
 
     @ApiOperation(value = "Login a trainer")
     @GetMapping("/{username}/login")
     public ResponseEntity<Void> login(@PathVariable("username") String username, @RequestParam("password") String password) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainer/login - username={}", transactionId, username);
+        log.info("GET /api/trainer/login - username={}", username);
 
         trainerService.login(username, password);
-        log.info("Transaction {} - GET /api/trainer/login completed successfully", transactionId);
+        log.info("GET /api/trainer/login completed successfully");
         return ResponseEntity.ok().build();
     }
 
@@ -53,22 +48,20 @@ public class TrainerController {
             @RequestParam("oldPassword") String oldPassword,
             @RequestParam("newPassword") String newPassword
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PUT /api/trainer/update/password - username = {}", transactionId, username);
+        log.info("PUT /api/trainer/update/password - username = {}", username);
 
         trainerService.changePassword(username, oldPassword, newPassword);
-        log.info("Transaction {} - PUT /api/trainer/update/password completed successfully", transactionId);
+        log.info("PUT /api/trainer/update/password completed successfully");
         return ResponseEntity.ok().build();
     }
 
     @ApiOperation("Get Trainer Profile")
     @GetMapping("/{username}")
     public ResponseEntity<TrainerProfileResponseDto> getTrainerProfile(@PathVariable("username") String username, @RequestParam("password") String password) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainer/{}", transactionId, username);
+        log.info("GET /api/trainer/{}", username);
 
         TrainerProfileResponseDto response = trainerService.getByUsername(username, password);
-        log.info("Transaction {} - GET /api/trainer/{} completed successfully", transactionId, username);
+        log.info("GET /api/trainer/{} completed successfully", username);
         return ResponseEntity.ok(response);
     }
 
@@ -78,13 +71,12 @@ public class TrainerController {
             @PathVariable("username") String username,
             @RequestBody TrainerUpdateRequestDto dto
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PUT /api/trainer/update/profile - username = {}", transactionId, username);
+        log.info("PUT /api/trainer/update/profile - username = {}", username);
 
         dto.setUsername(username);
 
         TrainerProfileResponseDto response = trainerService.updateTrainer(dto);
-        log.info("Transaction {} - PUT /api/trainer/{}/update/profile completed successfully", transactionId, response.getUsername());
+        log.info("PUT /api/trainer/{}/update/profile completed successfully", response.getUsername());
         return ResponseEntity.ok().build();
     }
 
@@ -94,12 +86,10 @@ public class TrainerController {
             @PathVariable("username") String username,
             @RequestParam("password") String password
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PATCH /api/trainer/{}/activate", transactionId, username);
+        log.info("PATCH /api/trainer/{}/activate", username);
 
         trainerService.toggleActive(username, password);
-        log.info("Transaction {} - PATCH /api/trainer/{}/activate completed successfully", transactionId, username);
+        log.info("PATCH /api/trainer/{}/activate completed successfully", username);
         return ResponseEntity.ok().build();
     }
-
 }

@@ -1,6 +1,6 @@
 package com.gymcrm.dto.training;
 
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class TraineeTrainingsListRequestDto extends AuthenticatedRequestDto {
+public class TraineeTrainingsListRequestDto extends UserCreatedResponseDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date periodFrom;
 

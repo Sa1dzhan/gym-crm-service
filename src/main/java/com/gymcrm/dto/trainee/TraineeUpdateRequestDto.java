@@ -1,6 +1,6 @@
 package com.gymcrm.dto.trainee;
 
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class TraineeUpdateRequestDto extends AuthenticatedRequestDto {
+public class TraineeUpdateRequestDto extends UserCreatedResponseDto {
 
     @NotNull
     private String firstName;

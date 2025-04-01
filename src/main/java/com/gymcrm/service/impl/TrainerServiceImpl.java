@@ -1,8 +1,8 @@
 package com.gymcrm.service.impl;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TrainerRepository;
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
@@ -23,18 +23,18 @@ import java.util.List;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerRepository trainerRepository;
-    private final Converter converter;
+    private final TrainerMapper trainerMapper;
 
     @Override
     @Transactional
-    public AuthenticatedRequestDto createTrainer(TrainerCreateRequestDto dto) {
-        Trainer trainer = converter.toEntity(dto);
+    public UserCreatedResponseDto createTrainer(TrainerCreateRequestDto dto) {
+        Trainer trainer = trainerMapper.toEntity(dto);
         UserCredentialGenerator.generateUserCredentials(trainer, trainerRepository::existsByUsername);
 
         Trainer savedTrainee = trainerRepository.save(trainer);
         log.info("Created Trainer with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
 
-        return converter.toRegisteredDto(savedTrainee);
+        return trainerMapper.toRegisteredDto(savedTrainee);
     }
 
     @Override
@@ -45,17 +45,17 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional
     public TrainerProfileResponseDto updateTrainer(TrainerUpdateRequestDto dto) {
-        Trainer trainer = converter.toEntity(dto);
+        Trainer trainer = trainerMapper.toEntity(dto);
         Authentication.authenticateUser(trainer.getUsername(), trainer.getPassword(), trainerRepository::findByUsername);
 
         Trainer savedTrainer = trainerRepository.save(trainer);
         log.info("Updated {}", savedTrainer);
-        return converter.toProfileDTO(savedTrainer);
+        return trainerMapper.toProfileDTO(savedTrainer);
     }
 
     @Override
     public TrainerProfileResponseDto getTrainer(Long id) {
-        return converter.toProfileDTO(
+        return trainerMapper.toProfileDTO(
                 trainerRepository.findById(id).orElseThrow(() -> new RuntimeException("No trainer found"))
         );
     }
@@ -63,7 +63,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public TrainerProfileResponseDto getByUsername(String username, String password) {
         Trainer trainer = Authentication.authenticateUser(username, password, trainerRepository::findByUsername);
-        return converter.toProfileDTO(trainer);
+        return trainerMapper.toProfileDTO(trainer);
     }
 
     @Override

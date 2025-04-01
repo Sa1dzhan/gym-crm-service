@@ -6,7 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class AuthenticatedRequestDto implements Serializable {
+public class UserCreatedResponseDto implements Serializable {
 
     @NotNull(message = "Username is required")
     private String username;

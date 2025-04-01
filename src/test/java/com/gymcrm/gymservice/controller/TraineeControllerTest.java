@@ -3,7 +3,7 @@ package com.gymcrm.gymservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TraineeController;
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
 import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
@@ -61,7 +61,7 @@ public class TraineeControllerTest {
         createDto.setDateOfBirth(new Date());
         createDto.setAddress("123 Street");
 
-        AuthenticatedRequestDto authResponse = new AuthenticatedRequestDto();
+        UserCreatedResponseDto authResponse = new UserCreatedResponseDto();
         authResponse.setUsername("alice.smith");
 
         when(traineeService.createTrainee(any(TraineeCreateRequestDto.class)))

@@ -1,6 +1,6 @@
 package com.gymcrm.service.impl;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TrainingMapper;
 import com.gymcrm.dao.*;
 import com.gymcrm.dto.trainee.AddTrainingRequestDto;
 import com.gymcrm.dto.training.TraineeTrainingsListRequestDto;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TrainingServiceImpl implements TrainingService {
-    private final Converter converter;
+    private final TrainingMapper trainingMapper;
     private final TrainingRepository trainingRepository;
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
@@ -48,7 +48,7 @@ public class TrainingServiceImpl implements TrainingService {
         trainingTypeRepository.findById(training.getTrainingType().getId())
                 .orElseThrow(() -> new RuntimeException("TrainingType not found"));
 
-        Training saved = trainingRepository.save(converter.toEntity(training));
+        Training saved = trainingRepository.save(trainingMapper.toEntity(training));
         log.info("Added Training with ID={}, name={}", saved.getId(), saved.getTrainingName());
     }
 
@@ -57,7 +57,7 @@ public class TrainingServiceImpl implements TrainingService {
         Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
         return trainingRepository.findTrainingsForTrainee(
                 dto.getUsername(), dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTrainerName(), dto.getTrainingTypeName()
-        ).stream().map(converter::toTraineeTrainingsListDto).collect(Collectors.toList());
+        ).stream().map(trainingMapper::toTraineeTrainingsListDto).collect(Collectors.toList());
     }
 
     @Override
@@ -65,6 +65,6 @@ public class TrainingServiceImpl implements TrainingService {
         Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), trainerRepository::findByUsername);
         return trainingRepository.findTrainingsForTrainer(
                 dto.getUsername(), dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTraineeName()
-        ).stream().map(converter::toTrainerTrainingsListDto).collect(Collectors.toList());
+        ).stream().map(trainingMapper::toTrainerTrainingsListDto).collect(Collectors.toList());
     }
 }

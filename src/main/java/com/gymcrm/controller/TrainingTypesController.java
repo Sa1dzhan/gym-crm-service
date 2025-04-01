@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @Api(tags = "Training Types")
 @RestController
@@ -30,11 +29,10 @@ public class TrainingTypesController {
             @RequestParam("username") String username,
             @RequestParam("password") String password
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/training-types - username{}", transactionId, username);
+        log.info("GET /api/training-types - username{}", username);
 
         List<TrainingTypeDto> response = trainingTypesService.getTrainingTypesList(username, password);
-        log.info("Transaction {} - GET /api/training-types completed successfully.", transactionId);
+        log.info("GET /api/training-types completed successfully.");
         return ResponseEntity.ok(response);
     }
 }

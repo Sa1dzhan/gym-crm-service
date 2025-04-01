@@ -1,6 +1,6 @@
 package com.gymcrm.dto.training;
 
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -11,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(callSuper = true)
-public class TrainerTrainingsListRequestDto extends AuthenticatedRequestDto {
+public class TrainerTrainingsListRequestDto extends UserCreatedResponseDto {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date periodFrom;

@@ -1,6 +1,6 @@
 package com.gymcrm.controller;
 
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
 import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Api(tags = "Trainee")
 @RestController
@@ -29,23 +28,20 @@ public class TraineeController {
     @ApiOperation("Trainee Registration")
     @PostMapping("/register")
     public ResponseEntity<?> createTrainee(@RequestBody TraineeCreateRequestDto dto) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] POST /api/trainee/register - firstName={}, lastName={}",
-                transactionId, dto.getFirstName(), dto.getLastName());
+        log.info("POST /api/trainee/register - firstName={}, lastName={}", dto.getFirstName(), dto.getLastName());
 
-        AuthenticatedRequestDto response = traineeService.createTrainee(dto);
-        log.info("Transaction {} - POST /api/trainee/register completed successfully", transactionId);
+        UserCreatedResponseDto response = traineeService.createTrainee(dto);
+        log.info("POST /api/trainee/register completed successfully");
         return ResponseEntity.ok(response);
     }
 
     @ApiOperation(value = "Login a trainee")
     @GetMapping("/{username}/login")
     public ResponseEntity<Void> login(@PathVariable("username") String username, @RequestParam("password") String password) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainee/login - username={}", transactionId, username);
+        log.info("GET /api/trainee/login - username={}", username);
 
         traineeService.login(username, password);
-        log.info("Transaction {} - GET /api/trainee/login completed successfully", transactionId);
+        log.info("GET /api/trainee/login completed successfully");
         return ResponseEntity.ok().build();
     }
 
@@ -56,22 +52,20 @@ public class TraineeController {
             @RequestParam("oldPassword") String oldPassword,
             @RequestParam("newPassword") String newPassword
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PUT /api/trainee/update/password - username = {}", transactionId, username);
+        log.info("PUT /api/trainee/update/password - username = {}", username);
 
         traineeService.changePassword(username, oldPassword, newPassword);
-        log.info("Transaction {} - PUT /api/trainee/update/password completed successfully", transactionId);
+        log.info("PUT /api/trainee/update/password completed successfully");
         return ResponseEntity.ok().build();
     }
 
     @ApiOperation("Get Trainee Profile")
     @GetMapping("/{username}")
     public ResponseEntity<TraineeProfileResponseDto> getTraineeProfile(@PathVariable("username") String username, @RequestParam("password") String password) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainee/{}", transactionId, username);
+        log.info("GET /api/trainee/{}", username);
 
         TraineeProfileResponseDto response = traineeService.getByUsername(username, password);
-        log.info("Transaction {} - GET /api/trainee/{} completed successfully", transactionId, username);
+        log.info("GET /api/trainee/{} completed successfully", username);
         return ResponseEntity.ok(response);
     }
 
@@ -81,13 +75,12 @@ public class TraineeController {
             @PathVariable("username") String username,
             @RequestBody TraineeUpdateRequestDto dto
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PUT /api/trainee/update/profile - username = {}", transactionId, username);
+        log.info("PUT /api/trainee/update/profile - username = {}", username);
 
         dto.setUsername(username);
 
         TraineeProfileResponseDto response = traineeService.updateTrainee(dto);
-        log.info("Transaction {} - PUT /api/trainee/{}/update/profile completed successfully", transactionId, response.getUsername());
+        log.info("PUT /api/trainee/{}/update/profile completed successfully", response.getUsername());
         return ResponseEntity.ok().build();
     }
 
@@ -97,11 +90,10 @@ public class TraineeController {
             @PathVariable("username") String username,
             @RequestParam("password") String password
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.warn("[txId={}] DELETE /api/trainee/{}", transactionId, username);
+        log.warn("DELETE /api/trainee/{}", username);
 
         traineeService.deleteTraineeByUsername(username, password);
-        log.warn("Transaction {} - DELETE /api/trainee/{} completed successfully", transactionId, username);
+        log.warn("DELETE /api/trainee/{} completed successfully", username);
         return ResponseEntity.ok().build();
     }
 
@@ -110,11 +102,10 @@ public class TraineeController {
     public ResponseEntity<TraineeNotAssignedTrainersDto> getNotAssignedTrainers(
             @PathVariable("username") String username,
             @RequestParam("password") String password) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainee/{}/not-assigned-trainers", transactionId, username);
+        log.info("GET /api/trainee/{}/not-assigned-trainers", username);
 
         TraineeNotAssignedTrainersDto response = traineeService.getTrainersNotAssigned(username, password);
-        log.info("Transaction {} - GET /api/trainee/{}/not-assigned-trainers completed successfully.", transactionId, username);
+        log.info("GET /api/trainee/{}/not-assigned-trainers completed successfully.", username);
         return ResponseEntity.ok(response);
     }
 
@@ -124,11 +115,10 @@ public class TraineeController {
             @PathVariable("username") String username,
             @RequestParam("password") String password,
             @RequestBody List<String> trainerUsernames) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PUT /api/trainee/{}/trainers - trainersCount={}", transactionId, username, trainerUsernames.size());
+        log.info("PUT /api/trainee/{}/trainers - trainersCount={}", username, trainerUsernames.size());
 
         List<TrainerShortProfileDto> response = traineeService.updateTrainersList(username, password, trainerUsernames);
-        log.info("Transaction {} - PUT /api/trainee/{}/trainers completed successfully.", transactionId, username);
+        log.info("PUT /api/trainee/{}/trainers completed successfully.", username);
         return ResponseEntity.ok(response);
     }
 
@@ -138,11 +128,10 @@ public class TraineeController {
             @PathVariable("username") String username,
             @RequestParam("password") String password
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] PATCH /api/trainee/{}/activate", transactionId, username);
+        log.info("PATCH /api/trainee/{}/activate", username);
 
         traineeService.toggleActive(username, password);
-        log.info("Transaction {} - PATCH /api/trainee/{}/activate completed successfully", transactionId, username);
+        log.info("PATCH /api/trainee/{}/activate completed successfully", username);
         return ResponseEntity.ok().build();
     }
 }

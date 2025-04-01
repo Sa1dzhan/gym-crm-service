@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/training")
@@ -28,11 +27,10 @@ public class TrainingController {
     public ResponseEntity<List<TraineeTrainingsListResponseDto>> getTraineeTrainings(
             @RequestBody TraineeTrainingsListRequestDto request
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainees/{}/trainings", transactionId, request.getUsername());
+        log.info("GET /api/trainees/{}/trainings", request.getUsername());
 
         List<TraineeTrainingsListResponseDto> trainings = trainingService.getTraineeTrainings(request);
-        log.info("Transaction {} - GET /api/trainees/{}/trainings completed successfully.", transactionId, request.getUsername());
+        log.info("GET /api/trainees/{}/trainings completed successfully.", request.getUsername());
         return ResponseEntity.ok(trainings);
     }
 
@@ -41,11 +39,10 @@ public class TrainingController {
     public ResponseEntity<List<TrainerTrainingsListResponseDto>> getTrainerTrainings(
             @RequestBody TrainerTrainingsListRequestDto request
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainees/{}/trainings", transactionId, request.getUsername());
+        log.info("GET /api/trainees/{}/trainings", request.getUsername());
 
         List<TrainerTrainingsListResponseDto> trainings = trainingService.getTrainerTrainings(request);
-        log.info("Transaction {} - GET /api/trainees/{}/trainings completed successfully.", transactionId, request.getUsername());
+        log.info("GET /api/trainees/{}/trainings completed successfully.", request.getUsername());
         return ResponseEntity.ok(trainings);
     }
 
@@ -54,11 +51,10 @@ public class TrainingController {
     public ResponseEntity<Void> addTrainings(
             @RequestBody AddTrainingRequestDto request
     ) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("[txId={}] GET /api/trainees/{}/trainings", transactionId, request.getUsername());
+        log.info("GET /api/trainees/{}/trainings", request.getUsername());
 
         trainingService.addTraining(request);
-        log.info("Transaction {} - GET /api/trainees/{}/trainings completed successfully.", transactionId, request.getUsername());
+        log.info("GET /api/trainees/{}/trainings completed successfully.", request.getUsername());
         return ResponseEntity.ok().build();
     }
 }

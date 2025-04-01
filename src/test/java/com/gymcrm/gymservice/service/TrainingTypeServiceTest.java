@@ -1,6 +1,6 @@
 package com.gymcrm.gymservice.service;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TrainingTypeMapper;
 import com.gymcrm.dao.GeneralUserRepository;
 import com.gymcrm.dao.TrainingTypeRepository;
 import com.gymcrm.dto.training_type.TrainingTypeDto;
@@ -33,7 +33,7 @@ public class TrainingTypeServiceTest {
     private TrainingTypeRepository trainingTypeRepository;
 
     @Mock
-    private Converter converter;
+    private TrainingTypeMapper trainingTypeMapper;
 
     @Mock
     private GeneralUserRepository userRepository;
@@ -79,8 +79,8 @@ public class TrainingTypeServiceTest {
         TrainingTypeDto dto2 = new TrainingTypeDto();
         dto2.setTrainingTypeName("Strength");
 
-        when(converter.toResponseDTO(tt1)).thenReturn(dto1);
-        when(converter.toResponseDTO(tt2)).thenReturn(dto2);
+        when(trainingTypeMapper.toResponseDTO(tt1)).thenReturn(dto1);
+        when(trainingTypeMapper.toResponseDTO(tt2)).thenReturn(dto2);
 
         List<TrainingTypeDto> result = trainingTypesService.getTrainingTypesList(username, password);
 
@@ -103,7 +103,7 @@ public class TrainingTypeServiceTest {
                 Authentication.authenticateUser(eq(username), eq(password), any())
         ).thenThrow(new RuntimeException("Authentication failed"));
 
-        Exception ex = assertThrows(RuntimeException.class, () ->
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
                 trainingTypesService.getTrainingTypesList(username, password)
         );
 

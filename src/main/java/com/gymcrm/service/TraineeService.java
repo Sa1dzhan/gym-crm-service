@@ -1,6 +1,6 @@
 package com.gymcrm.service;
 
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
 import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
@@ -10,7 +10,7 @@ import com.gymcrm.dto.trainer.TrainerShortProfileDto;
 import java.util.List;
 
 public interface TraineeService {
-    AuthenticatedRequestDto createTrainee(TraineeCreateRequestDto trainee);
+    UserCreatedResponseDto createTrainee(TraineeCreateRequestDto trainee);
 
     void login(String username, String password);
 

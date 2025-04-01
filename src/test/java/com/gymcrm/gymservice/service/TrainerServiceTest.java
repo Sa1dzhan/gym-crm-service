@@ -1,8 +1,9 @@
 package com.gymcrm.gymservice.service;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TraineeMapper;
+import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TrainerRepository;
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
@@ -37,7 +38,10 @@ class TrainerServiceTest {
     private TrainerRepository trainerRepository;
 
     @Mock
-    private Converter converter;
+    private TraineeMapper traineeMapper;
+
+    @Mock
+    private TrainerMapper trainerMapper;
 
     @InjectMocks
     private TrainerServiceImpl trainerService;
@@ -67,7 +71,7 @@ class TrainerServiceTest {
         trainerEntity.setFirstName("Alice");
         trainerEntity.setLastName("Smith");
 
-        when(converter.toEntity(any(TrainerCreateRequestDto.class))).thenReturn(trainerEntity);
+        when(trainerMapper.toEntity(any(TrainerCreateRequestDto.class))).thenReturn(trainerEntity);
 
         userCredentialGeneratorMock.when(() ->
                 UserCredentialGenerator.generateUserCredentials(eq(trainerEntity), any())
@@ -83,12 +87,12 @@ class TrainerServiceTest {
             return t;
         });
 
-        AuthenticatedRequestDto authDto = new AuthenticatedRequestDto();
+        UserCreatedResponseDto authDto = new UserCreatedResponseDto();
         authDto.setUsername("Alice.Smith");
 
-        when(converter.toRegisteredDto(any(Trainer.class))).thenReturn(authDto);
+        when(trainerMapper.toRegisteredDto(any(Trainer.class))).thenReturn(authDto);
 
-        AuthenticatedRequestDto created = trainerService.createTrainer(createDto);
+        UserCreatedResponseDto created = trainerService.createTrainer(createDto);
 
         assertEquals("Alice.Smith", created.getUsername());
         verify(trainerRepository).save(trainerEntity);
@@ -110,7 +114,7 @@ class TrainerServiceTest {
         trainerEntity.setPassword("oldPass");
         trainerEntity.setSpecialization(trainingType);
 
-        when(converter.toEntity(any(TrainerUpdateRequestDto.class))).thenReturn(trainerEntity);
+        when(trainerMapper.toEntity(any(TrainerUpdateRequestDto.class))).thenReturn(trainerEntity);
 
         authenticationMock.when(() ->
                 Authentication.authenticateUser(eq("Alice.Smith"), eq("oldPass"), any())
@@ -126,7 +130,7 @@ class TrainerServiceTest {
         profileDto.setUsername("Alice.Smith");
         profileDto.setSpecialization(trainingTypeDto);
 
-        when(converter.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
+        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
 
         TrainerProfileResponseDto updated = trainerService.updateTrainer(updateDto);
 
@@ -149,7 +153,7 @@ class TrainerServiceTest {
         profileDto.setId(30L);
         profileDto.setUsername("Alice.Smith");
 
-        when(converter.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
+        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
 
         TrainerProfileResponseDto found = trainerService.getTrainer(30L);
 
@@ -179,7 +183,7 @@ class TrainerServiceTest {
         TrainerProfileResponseDto profileDto = new TrainerProfileResponseDto();
         profileDto.setUsername(username);
 
-        when(converter.toProfileDTO(trainerEntity)).thenReturn(profileDto);
+        when(trainerMapper.toProfileDTO(trainerEntity)).thenReturn(profileDto);
 
         TrainerProfileResponseDto found = trainerService.getByUsername(username, password);
         assertEquals(username, found.getUsername());

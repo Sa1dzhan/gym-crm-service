@@ -3,7 +3,7 @@ package com.gymcrm.gymservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TrainerController;
-import com.gymcrm.dto.AuthenticatedRequestDto;
+import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
@@ -60,7 +60,7 @@ public class TrainerControllerTest {
         trainingTypeDto.setTrainingTypeName("Strength training");
         createDto.setSpecialization(trainingTypeDto);
 
-        AuthenticatedRequestDto authResponse = new AuthenticatedRequestDto();
+        UserCreatedResponseDto authResponse = new UserCreatedResponseDto();
         authResponse.setUsername("john.doe");
         when(trainerService.createTrainer(any(TrainerCreateRequestDto.class)))
                 .thenReturn(authResponse);

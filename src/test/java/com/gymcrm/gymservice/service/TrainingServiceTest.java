@@ -1,6 +1,6 @@
 package com.gymcrm.gymservice.service;
 
-import com.gymcrm.converter.Converter;
+import com.gymcrm.converter.TrainingMapper;
 import com.gymcrm.dao.*;
 import com.gymcrm.dto.trainee.AddTrainingRequestDto;
 import com.gymcrm.dto.training.TraineeTrainingsListRequestDto;
@@ -42,7 +42,7 @@ class TrainingServiceTest {
     @Mock
     private GeneralUserRepository userRepository;
     @Mock
-    private Converter converter;
+    private TrainingMapper trainingMapper;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;
@@ -112,7 +112,7 @@ class TrainingServiceTest {
         trainingEntity.setTrainingDate(trainingDate);
         trainingEntity.setTrainingDuration(60L);
 
-        when(converter.toEntity(dto)).thenReturn(trainingEntity);
+        when(trainingMapper.toEntity(dto)).thenReturn(trainingEntity);
 
         when(trainingRepository.save(trainingEntity)).thenAnswer(inv -> {
             Training t = inv.getArgument(0);
@@ -253,7 +253,7 @@ class TrainingServiceTest {
         )).thenReturn(mockList);
 
         TraineeTrainingsListResponseDto respDto = new TraineeTrainingsListResponseDto();
-        when(converter.toTraineeTrainingsListDto(training)).thenReturn(respDto);
+        when(trainingMapper.toTraineeTrainingsListDto(training)).thenReturn(respDto);
 
         List<TraineeTrainingsListResponseDto> result = trainingService.getTraineeTrainings(reqDto);
 
@@ -287,8 +287,8 @@ class TrainingServiceTest {
 
         TrainerTrainingsListResponseDto dto1 = new TrainerTrainingsListResponseDto();
         TrainerTrainingsListResponseDto dto2 = new TrainerTrainingsListResponseDto();
-        when(converter.toTrainerTrainingsListDto(training1)).thenReturn(dto1);
-        when(converter.toTrainerTrainingsListDto(training2)).thenReturn(dto2);
+        when(trainingMapper.toTrainerTrainingsListDto(training1)).thenReturn(dto1);
+        when(trainingMapper.toTrainerTrainingsListDto(training2)).thenReturn(dto2);
 
         List<TrainerTrainingsListResponseDto> result = trainingService.getTrainerTrainings(reqDto);
 
