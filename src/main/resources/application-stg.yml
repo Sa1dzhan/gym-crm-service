@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://stg-db:5432/gymdb
+    username: postgres
+    password: 1105
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8079

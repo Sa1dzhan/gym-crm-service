@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: gym-service
+  profiles:
+    active: local
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.gymcrm: DEBUG
+    org.springframework.security: INFO 

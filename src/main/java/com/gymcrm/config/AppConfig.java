@@ -21,7 +21,7 @@ import java.util.Properties;
         "com.gymcrm.service",
         "com.gymcrm.dao"
 })
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 @RequiredArgsConstructor
 public class AppConfig {
 

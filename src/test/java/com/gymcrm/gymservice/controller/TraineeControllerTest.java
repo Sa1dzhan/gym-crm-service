@@ -1,6 +1,7 @@
 package com.gymcrm.gymservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymcrm.config.TestConfig;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TraineeController;
 import com.gymcrm.dto.UserCreatedResponseDto;
@@ -33,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TraineeController.class)
-@Import({GlobalExceptionHandler.class, TraineeControllerTest.TestConfig.class})
+@Import({GlobalExceptionHandler.class, TestConfig.class, TraineeControllerTest.TestConfig.class})
 public class TraineeControllerTest {
 
     @Autowired

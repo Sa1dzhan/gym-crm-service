@@ -1,6 +1,7 @@
 package com.gymcrm.gymservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymcrm.config.TestConfig;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TrainerController;
 import com.gymcrm.dto.UserCreatedResponseDto;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TrainerController.class)
-@Import({GlobalExceptionHandler.class, TrainerControllerTest.TestConfig.class})
+@Import({GlobalExceptionHandler.class, TestConfig.class, TrainerControllerTest.TestConfig.class})
 public class TrainerControllerTest {
 
     @Autowired
@@ -48,7 +49,6 @@ public class TrainerControllerTest {
             return org.mockito.Mockito.mock(TrainerService.class);
         }
     }
-
 
     @Test
     void testCreateTrainer_Success() throws Exception {
