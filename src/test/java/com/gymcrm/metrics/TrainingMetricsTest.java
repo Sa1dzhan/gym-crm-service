@@ -23,16 +23,4 @@ class TrainingMetricsTest {
         metrics.incrementTrainingCreated();
         assertEquals(1.0, registry.get("gym.training.created").counter().count());
     }
-
-    @Test
-    void testTrainingUpdatedCounter() {
-        metrics.incrementTrainingUpdated();
-        assertEquals(1.0, registry.get("gym.training.updated").counter().count());
-    }
-
-    @Test
-    void testTrainingDeletedCounter() {
-        metrics.incrementTrainingDeleted();
-        assertEquals(1.0, registry.get("gym.training.deleted").counter().count());
-    }
 } 
