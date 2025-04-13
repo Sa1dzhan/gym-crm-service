@@ -7,8 +7,8 @@ import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
 import com.gymcrm.dto.trainee.TraineeUpdateRequestDto;
 import com.gymcrm.dto.trainer.TrainerShortProfileDto;
 import com.gymcrm.service.TraineeService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Api(tags = "Trainee")
+@Tag(name = "Trainee", description = "Trainee management API")
 @RestController
 @RequestMapping("/api/trainee")
 @Slf4j
@@ -25,7 +25,7 @@ public class TraineeController {
 
     private final TraineeService traineeService;
 
-    @ApiOperation("Trainee Registration")
+    @Operation(summary = "Trainee Registration")
     @PostMapping("/register")
     public ResponseEntity<?> createTrainee(@RequestBody TraineeCreateRequestDto dto) {
         log.info("POST /api/trainee/register - firstName={}, lastName={}", dto.getFirstName(), dto.getLastName());
@@ -35,7 +35,7 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    @ApiOperation(value = "Login a trainee")
+    @Operation(summary = "Login a trainee")
     @GetMapping("/{username}/login")
     public ResponseEntity<Void> login(@PathVariable("username") String username, @RequestParam("password") String password) {
         log.info("GET /api/trainee/login - username={}", username);
@@ -45,7 +45,7 @@ public class TraineeController {
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation(value = "Change password")
+    @Operation(summary = "Change password")
     @PutMapping("/{username}/update/password")
     public ResponseEntity<Void> changePassword(
             @PathVariable("username") String username,
@@ -59,7 +59,7 @@ public class TraineeController {
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation("Get Trainee Profile")
+    @Operation(summary = "Get Trainee Profile")
     @GetMapping("/{username}")
     public ResponseEntity<TraineeProfileResponseDto> getTraineeProfile(@PathVariable("username") String username, @RequestParam("password") String password) {
         log.info("GET /api/trainee/{}", username);
@@ -69,7 +69,7 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    @ApiOperation("Update Trainee Profile")
+    @Operation(summary = "Update Trainee Profile")
     @PutMapping("{username}/update/profile")
     public ResponseEntity<TraineeProfileResponseDto> updateTrainee(
             @PathVariable("username") String username,
@@ -84,7 +84,7 @@ public class TraineeController {
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation("Delete Trainee Profile")
+    @Operation(summary = "Delete Trainee Profile")
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> deleteTrainee(
             @PathVariable("username") String username,
@@ -97,7 +97,7 @@ public class TraineeController {
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation("Get Not Assigned (active) Trainers for a Trainee")
+    @Operation(summary = "Get Not Assigned (active) Trainers for a Trainee")
     @GetMapping("/{username}/not-assigned-trainers")
     public ResponseEntity<TraineeNotAssignedTrainersDto> getNotAssignedTrainers(
             @PathVariable("username") String username,
@@ -109,7 +109,7 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    @ApiOperation("Update Trainee's Trainers List")
+    @Operation(summary = "Update Trainee's Trainers List")
     @PutMapping("/{username}/trainers")
     public ResponseEntity<List<TrainerShortProfileDto>> updateTrainersList(
             @PathVariable("username") String username,
@@ -122,7 +122,7 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    @ApiOperation("Activate/De-Activate Trainee")
+    @Operation(summary = "Activate/De-Activate Trainee")
     @PatchMapping("/{username}/activate")
     public ResponseEntity<Void> toggleTraineeActive(
             @PathVariable("username") String username,

@@ -6,7 +6,8 @@ import com.gymcrm.dto.training.TraineeTrainingsListResponseDto;
 import com.gymcrm.dto.training.TrainerTrainingsListRequestDto;
 import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
 import com.gymcrm.service.TrainingService;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Training", description = "Training management API")
 @RestController
 @RequestMapping("/api/training")
 @Slf4j
@@ -22,7 +24,7 @@ public class TrainingController {
 
     private final TrainingService trainingService;
 
-    @ApiOperation("Get Trainee Trainings List")
+    @Operation(summary = "Get Trainee Trainings List")
     @GetMapping("/{username}/trainee/trainings")
     public ResponseEntity<List<TraineeTrainingsListResponseDto>> getTraineeTrainings(
             @RequestBody TraineeTrainingsListRequestDto request
@@ -34,7 +36,7 @@ public class TrainingController {
         return ResponseEntity.ok(trainings);
     }
 
-    @ApiOperation("Get Trainer Trainings List")
+    @Operation(summary = "Get Trainer Trainings List")
     @GetMapping("/{username}/trainer/trainings")
     public ResponseEntity<List<TrainerTrainingsListResponseDto>> getTrainerTrainings(
             @RequestBody TrainerTrainingsListRequestDto request
@@ -46,7 +48,7 @@ public class TrainingController {
         return ResponseEntity.ok(trainings);
     }
 
-    @ApiOperation("Add Training")
+    @Operation(summary = "Add Training")
     @PostMapping("/add/trainings")
     public ResponseEntity<Void> addTrainings(
             @RequestBody AddTrainingRequestDto request

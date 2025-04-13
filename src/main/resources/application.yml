@@ -36,3 +36,7 @@ logging:
 
 server:
   port: 8079
+
+springdoc:
+  swagger-ui:
+    path: /docs

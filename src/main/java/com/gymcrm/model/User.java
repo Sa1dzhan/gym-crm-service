@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "user_acc")
@@ -30,9 +29,8 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "is_active", nullable = false)
-    @ColumnDefault("true")
-    private Boolean isActive;
+    @Column(name = "is_active", nullable = false, columnDefinition = "boolean DEFAULT true")
+    private Boolean isActive = true;
 
     @Override
     public String toString() {
