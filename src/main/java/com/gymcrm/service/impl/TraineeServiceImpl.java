@@ -10,6 +10,7 @@ import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
 import com.gymcrm.dto.trainee.TraineeUpdateRequestDto;
 import com.gymcrm.dto.trainer.TrainerShortProfileDto;
+import com.gymcrm.metrics.UserMetrics;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.TraineeService;
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TraineeServiceImpl implements TraineeService {
+    private final UserMetrics userMetrics;
+
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
     private final TraineeMapper traineeMapper;
@@ -41,6 +44,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         Trainee savedTrainee = traineeRepository.save(trainee);
         log.info("Created Trainee with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
+        userMetrics.incrementUserRegistration();
 
         return traineeMapper.toRegisteredDto(savedTrainee);
     }
@@ -48,6 +52,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public void login(String username, String password) {
         Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
+        userMetrics.incrementUserLogin();
     }
 
     @Override
@@ -58,6 +63,8 @@ public class TraineeServiceImpl implements TraineeService {
 
         Trainee savedTrainee = traineeRepository.save(updatedTrainee);
         log.info("Updated {}", savedTrainee);
+        userMetrics.incrementUserProfileUpdate();
+
         return traineeMapper.toProfileDTO(updatedTrainee);
     }
 

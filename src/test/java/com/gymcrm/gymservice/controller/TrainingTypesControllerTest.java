@@ -1,5 +1,6 @@
 package com.gymcrm.gymservice.controller;
 
+import com.gymcrm.config.TestConfig;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TrainingTypesController;
 import com.gymcrm.dto.training_type.TrainingTypeDto;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TrainingTypesController.class)
-@Import({GlobalExceptionHandler.class})
+@Import({GlobalExceptionHandler.class, TestConfig.class, TrainingTypesControllerTest.TestConfig.class})
 public class TrainingTypesControllerTest {
 
     @Autowired
@@ -35,9 +36,9 @@ public class TrainingTypesControllerTest {
 
     @TestConfiguration
     static class TestConfig {
-        @Bean
         @Primary
-        public TrainingTypesService trainingService() {
+        @Bean
+        public TrainingTypesService trainingTypesService() {
             return Mockito.mock(TrainingTypesService.class);
         }
     }

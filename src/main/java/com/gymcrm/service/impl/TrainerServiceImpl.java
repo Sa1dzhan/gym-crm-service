@@ -6,6 +6,7 @@ import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
+import com.gymcrm.metrics.UserMetrics;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.TrainerService;
 import com.gymcrm.util.Authentication;
@@ -21,6 +22,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class TrainerServiceImpl implements TrainerService {
+    private final UserMetrics userMetrics;
 
     private final TrainerRepository trainerRepository;
     private final TrainerMapper trainerMapper;
@@ -33,6 +35,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         Trainer savedTrainee = trainerRepository.save(trainer);
         log.info("Created Trainer with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
+        userMetrics.incrementUserRegistration();
 
         return trainerMapper.toRegisteredDto(savedTrainee);
     }
@@ -40,6 +43,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public void login(String username, String password) {
         Authentication.authenticateUser(username, password, trainerRepository::findByUsername);
+        userMetrics.incrementUserLogin();
     }
 
     @Override
@@ -50,6 +54,8 @@ public class TrainerServiceImpl implements TrainerService {
 
         Trainer savedTrainer = trainerRepository.save(trainer);
         log.info("Updated {}", savedTrainer);
+        userMetrics.incrementUserProfileUpdate();
+
         return trainerMapper.toProfileDTO(savedTrainer);
     }
 

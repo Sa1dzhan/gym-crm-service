@@ -7,6 +7,7 @@ import com.gymcrm.dto.training.TraineeTrainingsListRequestDto;
 import com.gymcrm.dto.training.TraineeTrainingsListResponseDto;
 import com.gymcrm.dto.training.TrainerTrainingsListRequestDto;
 import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
+import com.gymcrm.metrics.TrainingMetrics;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TrainingServiceImpl implements TrainingService {
+    private final TrainingMetrics trainingMetrics;
+
     private final TrainingMapper trainingMapper;
     private final TrainingRepository trainingRepository;
     private final TraineeRepository traineeRepository;
@@ -50,6 +53,7 @@ public class TrainingServiceImpl implements TrainingService {
 
         Training saved = trainingRepository.save(trainingMapper.toEntity(training));
         log.info("Added Training with ID={}, name={}", saved.getId(), saved.getTrainingName());
+        trainingMetrics.incrementTrainingCreated();
     }
 
     @Override

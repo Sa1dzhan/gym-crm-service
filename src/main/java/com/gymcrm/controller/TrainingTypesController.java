@@ -2,8 +2,8 @@ package com.gymcrm.controller;
 
 import com.gymcrm.dto.training_type.TrainingTypeDto;
 import com.gymcrm.service.TrainingTypesService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Api(tags = "Training Types")
+@Tag(name = "Training Types", description = "Training Types management API")
 @RestController
 @RequestMapping("/api/training-types")
 @Slf4j
@@ -23,7 +23,7 @@ public class TrainingTypesController {
 
     private final TrainingTypesService trainingTypesService;
 
-    @ApiOperation("Get all Training Types")
+    @Operation(summary = "Get all Training Types")
     @GetMapping
     public ResponseEntity<List<TrainingTypeDto>> getTrainingTypes(
             @RequestParam("username") String username,
