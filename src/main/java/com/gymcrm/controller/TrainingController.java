@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,38 +26,44 @@ public class TrainingController {
     private final TrainingService trainingService;
 
     @Operation(summary = "Get Trainee Trainings List")
-    @GetMapping("/{username}/trainee/trainings")
+    @GetMapping("/trainee/trainings")
     public ResponseEntity<List<TraineeTrainingsListResponseDto>> getTraineeTrainings(
+            Authentication authentication,
             @RequestBody TraineeTrainingsListRequestDto request
     ) {
-        log.info("GET /api/trainees/{}/trainings", request.getUsername());
+        String username = authentication.getName();
+        log.info("GET /api/trainee/trainings for {}", username);
 
-        List<TraineeTrainingsListResponseDto> trainings = trainingService.getTraineeTrainings(request);
-        log.info("GET /api/trainees/{}/trainings completed successfully.", request.getUsername());
+        List<TraineeTrainingsListResponseDto> trainings = trainingService.getTraineeTrainings(username, request);
+        log.info("GET /api/trainee/trainings completed successfully for {}.", username);
         return ResponseEntity.ok(trainings);
     }
 
     @Operation(summary = "Get Trainer Trainings List")
-    @GetMapping("/{username}/trainer/trainings")
+    @GetMapping("/trainer/trainings")
     public ResponseEntity<List<TrainerTrainingsListResponseDto>> getTrainerTrainings(
+            Authentication authentication,
             @RequestBody TrainerTrainingsListRequestDto request
     ) {
-        log.info("GET /api/trainees/{}/trainings", request.getUsername());
+        String username = authentication.getName();
+        log.info("GET /api/trainer/trainings for {}", username);
 
-        List<TrainerTrainingsListResponseDto> trainings = trainingService.getTrainerTrainings(request);
-        log.info("GET /api/trainees/{}/trainings completed successfully.", request.getUsername());
+        List<TrainerTrainingsListResponseDto> trainings = trainingService.getTrainerTrainings(username, request);
+        log.info("GET /api/trainer/trainings completed successfully for {}.", username);
         return ResponseEntity.ok(trainings);
     }
 
     @Operation(summary = "Add Training")
     @PostMapping("/add/trainings")
     public ResponseEntity<Void> addTrainings(
+            Authentication authentication,
             @RequestBody AddTrainingRequestDto request
     ) {
-        log.info("GET /api/trainees/{}/trainings", request.getUsername());
+        String username = authentication.getName();
+        log.info("POST /api/training/add/trainings for {}", username);
 
-        trainingService.addTraining(request);
-        log.info("GET /api/trainees/{}/trainings completed successfully.", request.getUsername());
+        trainingService.addTraining(username, request);
+        log.info("POST /api/training/add/trainings completed successfully for {}.", username);
         return ResponseEntity.ok().build();
     }
 }

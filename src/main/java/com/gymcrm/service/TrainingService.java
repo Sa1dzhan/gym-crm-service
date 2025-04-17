@@ -9,9 +9,9 @@ import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
 import java.util.List;
 
 public interface TrainingService {
-    void addTraining(AddTrainingRequestDto request);
+    void addTraining(String username, AddTrainingRequestDto request);
 
-    List<TraineeTrainingsListResponseDto> getTraineeTrainings(TraineeTrainingsListRequestDto dto);
+    List<TraineeTrainingsListResponseDto> getTraineeTrainings(String username, TraineeTrainingsListRequestDto dto);
 
-    List<TrainerTrainingsListResponseDto> getTrainerTrainings(TrainerTrainingsListRequestDto dto);
+    List<TrainerTrainingsListResponseDto> getTrainerTrainings(String username, TrainerTrainingsListRequestDto dto);
 }

@@ -12,7 +12,6 @@ import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
 import com.gymcrm.service.TrainingService;
-import com.gymcrm.util.Authentication;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,12 +35,11 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     @Transactional
-    public void addTraining(AddTrainingRequestDto training) {
-        Authentication.authenticateUser(training.getUsername(), training.getPassword(), userRepository::findByUsername);
-
-        Trainer trainer = trainerRepository.findByUsername(training.getTraineeUsername())
+    public void addTraining(String username, AddTrainingRequestDto training) {
+        // You may want to check if the user has rights to add training, but do not authenticate by password
+        Trainer trainer = trainerRepository.findByUsername(training.getTrainerUsername())
                 .orElseThrow(() -> new RuntimeException("Trainer not found"));
-        Trainee trainee = traineeRepository.findByUsername(training.getTrainerUsername())
+        Trainee trainee = traineeRepository.findByUsername(training.getTraineeUsername())
                 .orElseThrow(() -> new RuntimeException("Trainee not found"));
 
         if (!trainer.getIsActive() || !trainee.getIsActive()) {
@@ -51,24 +49,25 @@ public class TrainingServiceImpl implements TrainingService {
         trainingTypeRepository.findById(training.getTrainingType().getId())
                 .orElseThrow(() -> new RuntimeException("TrainingType not found"));
 
-        Training saved = trainingRepository.save(trainingMapper.toEntity(training));
-        log.info("Added Training with ID={}, name={}", saved.getId(), saved.getTrainingName());
+        Training entity = trainingMapper.toEntity(training);
+        Training saved = trainingRepository.save(entity);
+        log.info("Added training by user {}", username);
         trainingMetrics.incrementTrainingCreated();
     }
 
     @Override
-    public List<TraineeTrainingsListResponseDto> getTraineeTrainings(TraineeTrainingsListRequestDto dto) {
-        Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
+    public List<TraineeTrainingsListResponseDto> getTraineeTrainings(String username, TraineeTrainingsListRequestDto dto) {
+        // Only filter by username, do not authenticate by password
         return trainingRepository.findTrainingsForTrainee(
-                dto.getUsername(), dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTrainerName(), dto.getTrainingTypeName()
+                username, dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTrainerName(), dto.getTrainingTypeName()
         ).stream().map(trainingMapper::toTraineeTrainingsListDto).collect(Collectors.toList());
     }
 
     @Override
-    public List<TrainerTrainingsListResponseDto> getTrainerTrainings(TrainerTrainingsListRequestDto dto) {
-        Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), trainerRepository::findByUsername);
+    public List<TrainerTrainingsListResponseDto> getTrainerTrainings(String username, TrainerTrainingsListRequestDto dto) {
+        // Only filter by username, do not authenticate by password
         return trainingRepository.findTrainingsForTrainer(
-                dto.getUsername(), dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTraineeName()
+                username, dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTraineeName()
         ).stream().map(trainingMapper::toTrainerTrainingsListDto).collect(Collectors.toList());
     }
 }

@@ -14,8 +14,10 @@ import org.mapstruct.Mappings;
 public interface TrainerMapper {
     TrainerProfileResponseDto toProfileDTO(Trainer source);
 
+    @Mapping(target = "specialization", ignore = true)
     Trainer toEntity(TrainerCreateRequestDto source);
 
+    @Mapping(target = "specialization", ignore = true)
     Trainer toEntity(TrainerUpdateRequestDto source);
 
     @Mappings({
@@ -26,4 +28,3 @@ public interface TrainerMapper {
 
     TrainerShortProfileDto toShortProfileDto(Trainer source);
 }
-

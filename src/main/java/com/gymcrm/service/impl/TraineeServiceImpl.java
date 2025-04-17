@@ -14,10 +14,10 @@ import com.gymcrm.metrics.UserMetrics;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.TraineeService;
-import com.gymcrm.util.Authentication;
 import com.gymcrm.util.UserCredentialGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,90 +35,103 @@ public class TraineeServiceImpl implements TraineeService {
     private final TrainerRepository trainerRepository;
     private final TraineeMapper traineeMapper;
     private final TrainerMapper trainerMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public UserCreatedResponseDto createTrainee(TraineeCreateRequestDto dto) {
         Trainee trainee = traineeMapper.toEntity(dto);
         UserCredentialGenerator.generateUserCredentials(trainee, traineeRepository::existsByUsername);
+        String generatedPassword = trainee.getPassword();
+        trainee.setPassword(passwordEncoder.encode(generatedPassword));
 
         Trainee savedTrainee = traineeRepository.save(trainee);
         log.info("Created Trainee with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
         userMetrics.incrementUserRegistration();
 
-        return traineeMapper.toRegisteredDto(savedTrainee);
+        // Return DTO directly, do not set plain password on entity
+        return new UserCreatedResponseDto(savedTrainee.getUsername(), generatedPassword);
     }
 
     @Override
     public void login(String username, String password) {
-        Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        if (!passwordEncoder.matches(password, trainee.getPassword())) {
+            log.warn("Failed login attempt for Trainee username={}", username);
+            throw new RuntimeException("Invalid credentials");
+        }
         userMetrics.incrementUserLogin();
+        log.info("Successful login for Trainee username={}", username);
     }
 
     @Override
     @Transactional
     public TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto dto) {
-        Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
-        Trainee updatedTrainee = traineeMapper.toEntity(dto);
-
-        Trainee savedTrainee = traineeRepository.save(updatedTrainee);
-        log.info("Updated {}", savedTrainee);
+        Trainee oldTrainee = traineeRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found: " + dto.getUsername()));
+        // Only update allowed fields
+        oldTrainee.setFirstName(dto.getFirstName());
+        oldTrainee.setLastName(dto.getLastName());
+        // Add more fields as needed
+        Trainee savedTrainee = traineeRepository.save(oldTrainee);
+        log.info("Updated Trainee profile for username={}", oldTrainee.getUsername());
         userMetrics.incrementUserProfileUpdate();
-
-        return traineeMapper.toProfileDTO(updatedTrainee);
+        return traineeMapper.toProfileDTO(savedTrainee);
     }
 
     @Override
-    public TraineeProfileResponseDto getTrainee(Long id) {
-        return traineeMapper.toProfileDTO(
-                traineeRepository.findById(id).orElseThrow(() -> new RuntimeException("No such trainee found"))
-        );
-    }
-
-    @Override
-    public TraineeProfileResponseDto getByUsername(String username, String password) {
-        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
+    public TraineeProfileResponseDto getByUsername(String username) {
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        log.info("Fetched profile for Trainee username={}", username);
         return traineeMapper.toProfileDTO(trainee);
     }
 
     @Override
     @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
-        Trainee trainee = Authentication.authenticateUser(username, oldPassword, traineeRepository::findByUsername);
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        if (!passwordEncoder.matches(oldPassword, trainee.getPassword())) {
+            log.warn("Failed password change attempt for Trainee username={}", username);
+            throw new RuntimeException("Old password is incorrect");
+        }
         UserCredentialGenerator.checkNewPassword(newPassword);
-
-        trainee.setPassword(newPassword);
+        trainee.setPassword(passwordEncoder.encode(newPassword));
         traineeRepository.save(trainee);
-
-        log.info("Update password for {}", username);
+        log.info("Password updated for Trainee username={}", username);
     }
 
     @Override
     @Transactional
-    public void toggleActive(String username, String password) {
-        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
-
+    public void toggleActive(String username) {
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
         Boolean current = trainee.getIsActive();
         trainee.setIsActive(!current);
         traineeRepository.save(trainee);
-
-        log.info("Username = {} toggled from {} to {}",
-                username, current, !current);
+        log.info("Trainee username={} toggled active from {} to {}", username, current, !current);
     }
 
     @Override
     @Transactional
     public void deleteTraineeByUsername(String username, String password) {
-        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
-
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        if (!passwordEncoder.matches(password, trainee.getPassword())) {
+            log.warn("Failed delete attempt for Trainee username={}", username);
+            throw new RuntimeException("Invalid credentials");
+        }
         traineeRepository.delete(trainee);
         log.warn("Deleted Trainee with username={}", username);
     }
 
     @Override
-    public TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username, String password) {
-        Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
-
+    public TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username) {
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        log.info("Fetched not-assigned trainers for Trainee username={}", username);
         return new TraineeNotAssignedTrainersDto(
                 trainerRepository.findAllTrainersNotAssigned(username)
                         .stream()
@@ -129,14 +142,13 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     @Transactional
-    public List<TrainerShortProfileDto> updateTrainersList(String username, String password, List<String> trainerUsernames) {
-        Trainee trainee = Authentication.authenticateUser(username, password, traineeRepository::findByUsername);
-
+    public List<TrainerShortProfileDto> updateTrainersList(String username, List<String> trainerUsernames) {
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
         List<Trainer> trainersList = trainerRepository.findAllByUsername(trainerUsernames);
         trainee.setTrainers(new HashSet<>(trainersList));
         traineeRepository.save(trainee);
         log.info("Updated trainers for Trainee username={}", username);
-
         return trainersList.stream().map(trainerMapper::toShortProfileDto).collect(Collectors.toList());
     }
 }

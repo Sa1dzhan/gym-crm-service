@@ -16,17 +16,15 @@ public interface TraineeService {
 
     TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto trainee);
 
-    TraineeProfileResponseDto getTrainee(Long id);
-
-    TraineeProfileResponseDto getByUsername(String username, String password);
+    TraineeProfileResponseDto getByUsername(String username);
 
     void changePassword(String username, String oldPassword, String newPassword);
 
-    void toggleActive(String username, String password);
+    void toggleActive(String username);
 
     void deleteTraineeByUsername(String username, String password);
 
-    TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username, String password);
+    TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username);
 
-    List<TrainerShortProfileDto> updateTrainersList(String username, String password, List<String> trainerUsernames);
+    List<TrainerShortProfileDto> updateTrainersList(String username, List<String> trainerUsernames);
 }

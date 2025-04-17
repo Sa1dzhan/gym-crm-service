@@ -1,18 +1,17 @@
 package com.gymcrm.gymservice.controller;
 
+import com.gymcrm.config.JwtUtil;
 import com.gymcrm.config.TestConfig;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TrainingTypesController;
 import com.gymcrm.dto.training_type.TrainingTypeDto;
 import com.gymcrm.service.TrainingTypesService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,28 +19,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TrainingTypesController.class)
-@Import({GlobalExceptionHandler.class, TestConfig.class, TrainingTypesControllerTest.TestConfig.class})
+@Import({GlobalExceptionHandler.class, TestConfig.class})
 public class TrainingTypesControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private TrainingTypesService trainingTypesService;
 
-    @TestConfiguration
-    static class TestConfig {
-        @Primary
-        @Bean
-        public TrainingTypesService trainingTypesService() {
-            return Mockito.mock(TrainingTypesService.class);
-        }
-    }
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Test
     void testGetTrainingTypes_Success() throws Exception {
@@ -54,11 +48,10 @@ public class TrainingTypesControllerTest {
         dto2.setTrainingTypeName("Cardio");
 
         List<TrainingTypeDto> dtoList = Arrays.asList(dto1, dto2);
-        when(trainingTypesService.getTrainingTypesList("user", "pass")).thenReturn(dtoList);
+        when(trainingTypesService.getTrainingTypesList(ArgumentMatchers.anyString())).thenReturn(dtoList);
 
         mockMvc.perform(get("/api/training-types")
-                        .param("username", "user")
-                        .param("password", "pass")
+                        .with(user("user").roles("USER"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -69,12 +62,11 @@ public class TrainingTypesControllerTest {
 
     @Test
     void testGetTrainingTypes_Error() throws Exception {
-        when(trainingTypesService.getTrainingTypesList("user", "wrongpass"))
+        when(trainingTypesService.getTrainingTypesList(ArgumentMatchers.anyString()))
                 .thenThrow(new IllegalArgumentException("Invalid credentials"));
 
         mockMvc.perform(get("/api/training-types")
-                        .param("username", "user")
-                        .param("password", "wrongpass")
+                        .with(user("user").roles("USER"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid credentials"));

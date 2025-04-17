@@ -11,6 +11,24 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
+@NamedQueries({
+        @NamedQuery(
+                name = "User.findByUsername",
+                query = "SELECT t FROM User t WHERE t.username = :username"
+        ),
+        @NamedQuery(
+                name = "User.findAll",
+                query = "SELECT t FROM User t"
+        ),
+        @NamedQuery(
+                name = "User.findAllByUsername",
+                query = "SELECT t FROM User t WHERE t.username IN :usernames"
+        ),
+        @NamedQuery(
+                name = "User.existsByUsername",
+                query = "SELECT t FROM User t WHERE t.username = :username"
+        )
+})
 public class User {
     @Id
     @Column(name = "id", nullable = false)
