@@ -1,6 +1,5 @@
 package com.gymcrm.dto.trainer;
 
-import com.gymcrm.dto.training_type.TrainingTypeDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +14,5 @@ public class TrainerCreateRequestDto {
     @NotNull
     private String lastName;
     @NotNull
-    private TrainingTypeDto specialization;
+    private Long specializationId;
 }

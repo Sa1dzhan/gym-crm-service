@@ -55,10 +55,7 @@ public class TrainerControllerTest {
         TrainerCreateRequestDto createDto = new TrainerCreateRequestDto();
         createDto.setFirstName("John");
         createDto.setLastName("Doe");
-        TrainingTypeDto trainingTypeDto = new TrainingTypeDto();
-        trainingTypeDto.setId(1L);
-        trainingTypeDto.setTrainingTypeName("Strength training");
-        createDto.setSpecialization(trainingTypeDto);
+        createDto.setSpecializationId(1L);
 
         UserCreatedResponseDto authResponse = new UserCreatedResponseDto();
         authResponse.setUsername("john.doe");
@@ -128,10 +125,7 @@ public class TrainerControllerTest {
         TrainerUpdateRequestDto updateDto = new TrainerUpdateRequestDto();
         updateDto.setFirstName("Jane");
         updateDto.setLastName("Doe");
-        TrainingTypeDto strengthDto = new TrainingTypeDto();
-        strengthDto.setId(1L);
-        strengthDto.setTrainingTypeName("Strength training");
-        updateDto.setSpecialization(strengthDto);
+        updateDto.setSpecializationId(1L);
         updateDto.setIsActive(true);
 
         TrainerProfileResponseDto profile = new TrainerProfileResponseDto();
@@ -154,6 +148,31 @@ public class TrainerControllerTest {
                         .content(objectMapper.writeValueAsString(updateDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUpdateTrainer_Success() throws Exception {
+        TrainerUpdateRequestDto updateDto = new TrainerUpdateRequestDto();
+        updateDto.setUsername("john.doe");
+        updateDto.setPassword("secret");
+        updateDto.setFirstName("John");
+        updateDto.setLastName("Doe");
+        updateDto.setSpecializationId(1L);
+        updateDto.setIsActive(true);
+
+        TrainerProfileResponseDto profile = new TrainerProfileResponseDto();
+        profile.setUsername("john.doe");
+        profile.setFirstName("John");
+        profile.setLastName("Doe");
+        when(trainerService.updateTrainer(any(TrainerUpdateRequestDto.class))).thenReturn(profile);
+
+        String url = "/api/trainer/john.doe/update";
+
+        mockMvc.perform(put(url)
+                        .content(objectMapper.writeValueAsString(updateDto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("john.doe"));
     }
 
     @Test

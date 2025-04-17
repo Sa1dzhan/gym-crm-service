@@ -2,12 +2,14 @@ package com.gymcrm.service.impl;
 
 import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TrainerRepository;
+import com.gymcrm.dao.TrainingTypeRepository;
 import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
 import com.gymcrm.metrics.UserMetrics;
 import com.gymcrm.model.Trainer;
+import com.gymcrm.model.TrainingType;
 import com.gymcrm.service.TrainerService;
 import com.gymcrm.util.Authentication;
 import com.gymcrm.util.UserCredentialGenerator;
@@ -26,12 +28,17 @@ public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerRepository trainerRepository;
     private final TrainerMapper trainerMapper;
+    private final TrainingTypeRepository trainingTypeRepository;
 
     @Override
     @Transactional
     public UserCreatedResponseDto createTrainer(TrainerCreateRequestDto dto) {
         Trainer trainer = trainerMapper.toEntity(dto);
         UserCredentialGenerator.generateUserCredentials(trainer, trainerRepository::existsByUsername);
+
+        TrainingType trainingType = trainingTypeRepository.findById(dto.getSpecializationId())
+                .orElseThrow(() -> new RuntimeException("TrainingType not found"));
+        trainer.setSpecialization(trainingType);
 
         Trainer savedTrainee = trainerRepository.save(trainer);
         log.info("Created Trainer with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
@@ -49,10 +56,16 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional
     public TrainerProfileResponseDto updateTrainer(TrainerUpdateRequestDto dto) {
-        Trainer trainer = trainerMapper.toEntity(dto);
-        Authentication.authenticateUser(trainer.getUsername(), trainer.getPassword(), trainerRepository::findByUsername);
+        Trainer oldTrainer = Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), trainerRepository::findByUsername);
+        oldTrainer.setFirstName(dto.getFirstName());
+        oldTrainer.setLastName(dto.getLastName());
+        oldTrainer.setIsActive(dto.getIsActive());
 
-        Trainer savedTrainer = trainerRepository.save(trainer);
+        TrainingType trainingType = trainingTypeRepository.findById(dto.getSpecializationId())
+                .orElseThrow(() -> new RuntimeException("TrainingType not found"));
+        oldTrainer.setSpecialization(trainingType);
+
+        Trainer savedTrainer = trainerRepository.save(oldTrainer);
         log.info("Updated {}", savedTrainer);
         userMetrics.incrementUserProfileUpdate();
 

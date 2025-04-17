@@ -8,6 +8,7 @@ import com.gymcrm.dto.training.TraineeTrainingsListResponseDto;
 import com.gymcrm.dto.training.TrainerTrainingsListRequestDto;
 import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
 import com.gymcrm.dto.training_type.TrainingTypeDto;
+import com.gymcrm.metrics.TrainingMetrics;
 import com.gymcrm.model.*;
 import com.gymcrm.service.impl.TrainingServiceImpl;
 import com.gymcrm.util.Authentication;
@@ -43,6 +44,8 @@ class TrainingServiceTest {
     private GeneralUserRepository userRepository;
     @Mock
     private TrainingMapper trainingMapper;
+    @Mock
+    private TrainingMetrics trainingMetrics;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;
