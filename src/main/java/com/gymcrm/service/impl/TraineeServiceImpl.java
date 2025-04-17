@@ -58,8 +58,9 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto dto) {
-        Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
+        Trainee oldTrainee = Authentication.authenticateUser(dto.getUsername(), dto.getPassword(), traineeRepository::findByUsername);
         Trainee updatedTrainee = traineeMapper.toEntity(dto);
+        updatedTrainee.setId(oldTrainee.getId());
 
         Trainee savedTrainee = traineeRepository.save(updatedTrainee);
         log.info("Updated {}", savedTrainee);

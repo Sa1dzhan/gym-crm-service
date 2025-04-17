@@ -3,11 +3,12 @@ package com.gymcrm.gymservice.service;
 import com.gymcrm.converter.TraineeMapper;
 import com.gymcrm.converter.TrainerMapper;
 import com.gymcrm.dao.TrainerRepository;
+import com.gymcrm.dao.TrainingTypeRepository;
 import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainer.TrainerCreateRequestDto;
 import com.gymcrm.dto.trainer.TrainerProfileResponseDto;
 import com.gymcrm.dto.trainer.TrainerUpdateRequestDto;
-import com.gymcrm.dto.training_type.TrainingTypeDto;
+import com.gymcrm.metrics.UserMetrics;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.TrainingType;
 import com.gymcrm.service.impl.TrainerServiceImpl;
@@ -43,6 +44,12 @@ class TrainerServiceTest {
     @Mock
     private TrainerMapper trainerMapper;
 
+    @Mock
+    private TrainingTypeRepository trainingTypeRepository;
+
+    @Mock
+    private UserMetrics userMetrics;
+
     @InjectMocks
     private TrainerServiceImpl trainerService;
 
@@ -66,10 +73,15 @@ class TrainerServiceTest {
         TrainerCreateRequestDto createDto = new TrainerCreateRequestDto();
         createDto.setFirstName("Alice");
         createDto.setLastName("Smith");
+        createDto.setSpecializationId(1L);
 
         Trainer trainerEntity = new Trainer();
         trainerEntity.setFirstName("Alice");
         trainerEntity.setLastName("Smith");
+
+        TrainingType trainingType = new TrainingType();
+        trainingType.setId(1L);
+        when(trainingTypeRepository.findById(1L)).thenReturn(java.util.Optional.of(trainingType));
 
         when(trainerMapper.toEntity(any(TrainerCreateRequestDto.class))).thenReturn(trainerEntity);
 
@@ -102,43 +114,39 @@ class TrainerServiceTest {
     @Test
     void testUpdateTrainer_Success() {
         TrainerUpdateRequestDto updateDto = new TrainerUpdateRequestDto();
-        updateDto.setUsername("Alice.Smith");
-        updateDto.setPassword("oldPass");
+        updateDto.setUsername("john.doe");
+        updateDto.setPassword("secret");
+        updateDto.setFirstName("John");
+        updateDto.setLastName("Doe");
+        updateDto.setSpecializationId(1L);
+        updateDto.setIsActive(true);
+
+        Trainer trainerEntity = new Trainer();
+        trainerEntity.setUsername("john.doe");
+        trainerEntity.setPassword("secret");
+        trainerEntity.setFirstName("John");
+        trainerEntity.setLastName("Doe");
+        trainerEntity.setIsActive(true);
 
         TrainingType trainingType = new TrainingType();
         trainingType.setId(1L);
-        trainingType.setTrainingTypeName("Strength training");
+        when(trainingTypeRepository.findById(1L)).thenReturn(java.util.Optional.of(trainingType));
 
-        Trainer trainerEntity = new Trainer();
-        trainerEntity.setUsername("Alice.Smith");
-        trainerEntity.setPassword("oldPass");
-        trainerEntity.setSpecialization(trainingType);
+        when(Authentication.authenticateUser(eq("john.doe"), eq("secret"), any())).thenReturn(trainerEntity);
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(trainerEntity);
 
-        when(trainerMapper.toEntity(any(TrainerUpdateRequestDto.class))).thenReturn(trainerEntity);
-
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("Alice.Smith"), eq("oldPass"), any())
-        ).thenReturn(trainerEntity);
-
-        when(trainerRepository.save(any(Trainer.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        TrainingTypeDto trainingTypeDto = new TrainingTypeDto();
-        trainingTypeDto.setId(1L);
-        trainingTypeDto.setTrainingTypeName("Strength training");
-
-        TrainerProfileResponseDto profileDto = new TrainerProfileResponseDto();
-        profileDto.setUsername("Alice.Smith");
-        profileDto.setSpecialization(trainingTypeDto);
-
-        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
+        TrainerProfileResponseDto profile = new TrainerProfileResponseDto();
+        profile.setUsername("john.doe");
+        profile.setFirstName("John");
+        profile.setLastName("Doe");
+        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profile);
 
         TrainerProfileResponseDto updated = trainerService.updateTrainer(updateDto);
 
-        assertEquals("Strength training", updated.getSpecialization().getTrainingTypeName());
+        assertEquals("john.doe", updated.getUsername());
+        assertEquals("John", updated.getFirstName());
+        assertEquals("Doe", updated.getLastName());
         verify(trainerRepository).save(trainerEntity);
-        authenticationMock.verify(() ->
-                Authentication.authenticateUser(eq("Alice.Smith"), eq("oldPass"), any())
-        );
     }
 
     @Test

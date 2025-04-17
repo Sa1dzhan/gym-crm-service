@@ -10,6 +10,7 @@ import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
 import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
 import com.gymcrm.dto.trainee.TraineeUpdateRequestDto;
 import com.gymcrm.dto.trainer.TrainerShortProfileDto;
+import com.gymcrm.metrics.UserMetrics;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.service.impl.TraineeServiceImpl;
@@ -48,6 +49,9 @@ class TraineeServiceTest {
 
     @Mock
     private TrainerMapper trainerMapper;
+
+    @Mock
+    private UserMetrics userMetrics;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;
