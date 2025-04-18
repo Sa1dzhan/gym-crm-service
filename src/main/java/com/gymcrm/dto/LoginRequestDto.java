@@ -1,9 +1,9 @@
 package com.gymcrm.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class LoginRequestDto {
-    private String username;
-    private String password;
+public class LoginRequestDto extends UserCreatedResponseDto {
 }
