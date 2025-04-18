@@ -1,58 +1,58 @@
 # Gym CRM Service
 
-Сервис для управления тренажерным залом, включающий функционал для тренеров и тренирующихся.
+Service for managing a gym, including functionality for trainers and trainees.
 
-## Требования
+## Requirements
 
 - Java 17
 - Maven 3.8+
 - PostgreSQL 14+
 
-## Конфигурация
+## Configuration
 
-Приложение поддерживает следующие профили:
+The application supports the following profiles:
 
-- `local` - для локальной разработки
-- `dev` - для разработки
-- `stg` - для тестирования
-- `prod` - для продакшена
+- `local` - for local development
+- `dev` - for development
+- `stg` - for testing
+- `prod` - for production
 
-### Запуск с разными профилями
+### Running with different profiles
 
 ```bash
-# Локальная разработка
+# Local development
 mvn spring-boot:run -Dspring.profiles.active=local
 
-# Разработка
+# Development
 mvn spring-boot:run -Dspring.profiles.active=dev
 
-# Тестирование
+# Testing
 mvn spring-boot:run -Dspring.profiles.active=stg
 
-# Продакшен
+# Production
 mvn spring-boot:run -Dspring.profiles.active=prod
 ```
 
-## Мониторинг
+## Monitoring
 
-Приложение предоставляет следующие эндпоинты для мониторинга:
+The application provides the following endpoints for monitoring:
 
-- `/actuator/health` - состояние здоровья приложения
-- `/actuator/metrics` - метрики приложения
-- `/actuator/prometheus` - метрики в формате Prometheus
+- `/actuator/health` - application health status
+- `/actuator/metrics` - application metrics
+- `/actuator/prometheus` - metrics in Prometheus format
 
-## Безопасность
+## Security
 
-Все эндпоинты, кроме регистрации и эндпоинтов мониторинга, требуют базовой аутентификации.
+All endpoints except registration and monitoring endpoints require basic authentication.
 
-## Тестирование
+## Testing
 
-Для запуска тестов:
+To run tests:
 
 ```bash
 mvn test
 ```
 
-## Логирование
+## Logging
 
-Логирование настроено на уровне DEBUG для пакета `com.gymcrm` и INFO для остальных компонентов. 
+Logging is configured at DEBUG level for the `com.gymcrm` package and INFO for other components.
