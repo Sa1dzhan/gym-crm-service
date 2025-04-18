@@ -9,7 +9,10 @@ import com.gymcrm.dto.training.TrainerTrainingsListRequestDto;
 import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
 import com.gymcrm.dto.training_type.TrainingTypeDto;
 import com.gymcrm.metrics.TrainingMetrics;
-import com.gymcrm.model.*;
+import com.gymcrm.model.Trainee;
+import com.gymcrm.model.Trainer;
+import com.gymcrm.model.Training;
+import com.gymcrm.model.TrainingType;
 import com.gymcrm.service.impl.TrainingServiceImpl;
 import com.gymcrm.util.Authentication;
 import org.junit.jupiter.api.AfterEach;
@@ -87,24 +90,19 @@ class TrainingServiceTest {
 
     @Test
     void testAddTraining_Success() {
+        String username = "authUser";
         AddTrainingRequestDto dto = new AddTrainingRequestDto();
-        dto.setUsername("authUser");
-        dto.setPassword("authPass");
-        dto.setTraineeUsername("activeTrainer");
-        dto.setTrainerUsername("activeTrainee");
+        dto.setTraineeUsername("activeTrainee");
+        dto.setTrainerUsername("activeTrainer");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Morning Workout");
         Date trainingDate = new Date();
         dto.setTrainingDate(trainingDate);
         dto.setTrainingDuration(60L);
 
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(dummyUser);
-
         when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
         when(traineeRepository.findByUsername("activeTrainee")).thenReturn(Optional.of(activeTrainee));
+
         when(trainingTypeRepository.findById(trainingTypeDto.getId())).thenReturn(Optional.of(trainingType));
 
         Training trainingEntity = new Training();
@@ -116,22 +114,17 @@ class TrainingServiceTest {
         trainingEntity.setTrainingDuration(60L);
 
         when(trainingMapper.toEntity(dto)).thenReturn(trainingEntity);
+        when(trainingRepository.save(any(Training.class))).thenReturn(trainingEntity);
 
-        when(trainingRepository.save(trainingEntity)).thenAnswer(inv -> {
-            Training t = inv.getArgument(0);
-            t.setId(999L);
-            return t;
-        });
+        trainingService.addTraining(username, dto);
 
-        trainingService.addTraining(dto);
-        verify(trainingRepository).save(trainingEntity);
+        verify(trainingRepository).save(any(Training.class));
     }
 
     @Test
     void testAddTraining_TrainerNotFound() {
+        String username = "authUser";
         AddTrainingRequestDto dto = new AddTrainingRequestDto();
-        dto.setUsername("authUser");
-        dto.setPassword("authPass");
         dto.setTraineeUsername("activeTrainer");
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
@@ -139,20 +132,16 @@ class TrainingServiceTest {
         dto.setTrainingDate(new Date());
         dto.setTrainingDuration(60L);
 
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(dummyUser);
+        when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> trainingService.addTraining(dto));
+        assertThrows(RuntimeException.class, () -> trainingService.addTraining(username, dto));
         verify(trainingRepository, never()).save(any());
     }
 
     @Test
     void testAddTraining_TraineeNotFound() {
+        String username = "authUser";
         AddTrainingRequestDto dto = new AddTrainingRequestDto();
-        dto.setUsername("authUser");
-        dto.setPassword("authPass");
         dto.setTraineeUsername("activeTrainer");
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
@@ -160,20 +149,21 @@ class TrainingServiceTest {
         dto.setTrainingDate(new Date());
         dto.setTrainingDuration(60L);
 
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(dummyUser);
+        when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
+        when(traineeRepository.findByUsername("activeTrainee")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> trainingService.addTraining(dto));
+        assertThrows(RuntimeException.class, () -> trainingService.addTraining(username, dto));
         verify(trainingRepository, never()).save(any());
     }
 
     @Test
     void testAddTraining_InactiveTrainer() {
+        String username = "authUser";
         AddTrainingRequestDto dto = new AddTrainingRequestDto();
-        dto.setUsername("authUser");
-        dto.setPassword("authPass");
+        Trainer inactiveTrainer = new Trainer();
+        inactiveTrainer.setId(101L);
+        inactiveTrainer.setUsername("inactiveTrainer");
+        inactiveTrainer.setIsActive(false);
         dto.setTraineeUsername("inactiveTrainer");
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
@@ -181,20 +171,20 @@ class TrainingServiceTest {
         dto.setTrainingDate(new Date());
         dto.setTrainingDuration(60L);
 
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(dummyUser);
+        when(trainerRepository.findByUsername("inactiveTrainer")).thenReturn(Optional.of(inactiveTrainer));
 
-        assertThrows(RuntimeException.class, () -> trainingService.addTraining(dto));
+        assertThrows(RuntimeException.class, () -> trainingService.addTraining(username, dto));
         verify(trainingRepository, never()).save(any());
     }
 
     @Test
     void testAddTraining_InactiveTrainee() {
+        String username = "authUser";
         AddTrainingRequestDto dto = new AddTrainingRequestDto();
-        dto.setUsername("authUser");
-        dto.setPassword("authPass");
+        Trainee inactiveTrainee = new Trainee();
+        inactiveTrainee.setId(201L);
+        inactiveTrainee.setUsername("inactiveTrainee");
+        inactiveTrainee.setIsActive(false);
         dto.setTraineeUsername("activeTrainer");
         dto.setTrainerUsername("inactiveTrainee");
         dto.setTrainingType(trainingTypeDto);
@@ -202,20 +192,17 @@ class TrainingServiceTest {
         dto.setTrainingDate(new Date());
         dto.setTrainingDuration(60L);
 
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(dummyUser);
+        when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
+        when(traineeRepository.findByUsername("inactiveTrainee")).thenReturn(Optional.of(inactiveTrainee));
 
-        assertThrows(RuntimeException.class, () -> trainingService.addTraining(dto));
+        assertThrows(RuntimeException.class, () -> trainingService.addTraining(username, dto));
         verify(trainingRepository, never()).save(any());
     }
 
     @Test
     void testAddTraining_TrainingTypeNotFound() {
+        String username = "authUser";
         AddTrainingRequestDto dto = new AddTrainingRequestDto();
-        dto.setUsername("authUser");
-        dto.setPassword("authPass");
         dto.setTraineeUsername("activeTrainer");
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
@@ -223,20 +210,18 @@ class TrainingServiceTest {
         dto.setTrainingDate(new Date());
         dto.setTrainingDuration(60L);
 
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(dummyUser);
+        when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
+        when(traineeRepository.findByUsername("activeTrainee")).thenReturn(Optional.of(activeTrainee));
+        when(trainingTypeRepository.findById(trainingTypeDto.getId())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> trainingService.addTraining(dto));
+        assertThrows(RuntimeException.class, () -> trainingService.addTraining(username, dto));
         verify(trainingRepository, never()).save(any());
     }
 
     @Test
     void testGetTraineeTrainings() {
+        String username = "authUser";
         TraineeTrainingsListRequestDto reqDto = new TraineeTrainingsListRequestDto();
-        reqDto.setUsername("authUser");
-        reqDto.setPassword("authPass");
         reqDto.setTrainerName("trainerName");
         reqDto.setTrainingTypeName("Strength");
         Date fromDate = new Date();
@@ -244,48 +229,38 @@ class TrainingServiceTest {
         reqDto.setPeriodFrom(fromDate);
         reqDto.setPeriodTo(toDate);
 
-
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(activeTrainee);
-
         Training training = new Training();
         List<Training> mockList = Collections.singletonList(training);
         when(trainingRepository.findTrainingsForTrainee(
-                eq("authUser"), eq(fromDate), eq(toDate), eq("trainerName"), eq("Strength")
+                eq(username), eq(fromDate), eq(toDate), eq("trainerName"), eq("Strength")
         )).thenReturn(mockList);
 
         TraineeTrainingsListResponseDto respDto = new TraineeTrainingsListResponseDto();
         when(trainingMapper.toTraineeTrainingsListDto(training)).thenReturn(respDto);
 
-        List<TraineeTrainingsListResponseDto> result = trainingService.getTraineeTrainings(reqDto);
+        List<TraineeTrainingsListResponseDto> result = trainingService.getTraineeTrainings(username, reqDto);
 
         assertEquals(1, result.size());
         verify(trainingRepository).findTrainingsForTrainee(
-                "authUser", fromDate, toDate, "trainerName", "Strength"
+                username, fromDate, toDate, "trainerName", "Strength"
         );
     }
 
     @Test
     void testGetTrainerTrainings() {
+        String username = "authUser";
         TrainerTrainingsListRequestDto reqDto = new TrainerTrainingsListRequestDto();
-        reqDto.setUsername("authUser");
-        reqDto.setPassword("authPass");
         reqDto.setTraineeName("traineeName");
         Date fromDate = new Date();
         Date toDate = new Date();
         reqDto.setPeriodFrom(fromDate);
         reqDto.setPeriodTo(toDate);
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("authUser"), eq("authPass"), any())
-        ).thenReturn(activeTrainer);
-
         Training training1 = new Training();
         Training training2 = new Training();
         List<Training> mockList = Arrays.asList(training1, training2);
         when(trainingRepository.findTrainingsForTrainer(
-                eq("authUser"), eq(fromDate), eq(toDate), eq("traineeName")
+                eq(username), eq(fromDate), eq(toDate), eq("traineeName")
         )).thenReturn(mockList);
 
         TrainerTrainingsListResponseDto dto1 = new TrainerTrainingsListResponseDto();
@@ -293,11 +268,11 @@ class TrainingServiceTest {
         when(trainingMapper.toTrainerTrainingsListDto(training1)).thenReturn(dto1);
         when(trainingMapper.toTrainerTrainingsListDto(training2)).thenReturn(dto2);
 
-        List<TrainerTrainingsListResponseDto> result = trainingService.getTrainerTrainings(reqDto);
+        List<TrainerTrainingsListResponseDto> result = trainingService.getTrainerTrainings(username, reqDto);
 
         assertEquals(2, result.size());
         verify(trainingRepository).findTrainingsForTrainer(
-                "authUser", fromDate, toDate, "traineeName"
+                username, fromDate, toDate, "traineeName"
         );
     }
 }

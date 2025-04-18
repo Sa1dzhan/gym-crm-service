@@ -22,14 +22,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +49,9 @@ class TrainerServiceTest {
     private TrainingTypeRepository trainingTypeRepository;
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private UserMetrics userMetrics;
 
     @InjectMocks
@@ -60,12 +64,23 @@ class TrainerServiceTest {
     void setUp() {
         authenticationMock = mockStatic(Authentication.class);
         userCredentialGeneratorMock = mockStatic(UserCredentialGenerator.class);
+
+        lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+
+        lenient().doNothing().when(userMetrics).incrementUserRegistration();
+        lenient().doNothing().when(userMetrics).incrementUserLogin();
+        lenient().doNothing().when(userMetrics).incrementUserProfileUpdate();
     }
 
     @AfterEach
     void tearDown() {
-        authenticationMock.close();
-        userCredentialGeneratorMock.close();
+        if (authenticationMock != null) {
+            authenticationMock.close();
+        }
+        if (userCredentialGeneratorMock != null) {
+            userCredentialGeneratorMock.close();
+        }
     }
 
     @Test
@@ -81,189 +96,170 @@ class TrainerServiceTest {
 
         TrainingType trainingType = new TrainingType();
         trainingType.setId(1L);
-        when(trainingTypeRepository.findById(1L)).thenReturn(java.util.Optional.of(trainingType));
+        when(trainingTypeRepository.findById(1L)).thenReturn(Optional.of(trainingType));
 
         when(trainerMapper.toEntity(any(TrainerCreateRequestDto.class))).thenReturn(trainerEntity);
 
-        userCredentialGeneratorMock.when(() ->
-                UserCredentialGenerator.generateUserCredentials(eq(trainerEntity), any())
-        ).thenAnswer(invocation -> {
-            trainerEntity.setUsername("Alice.Smith");
-            trainerEntity.setPassword("randomPass123");
-            return null;
-        });
+        // Mock the static method properly
+        userCredentialGeneratorMock.when(() -> UserCredentialGenerator.generateUserCredentials(eq(trainerEntity), any(Predicate.class)))
+                .then(invocation -> {
+                    Trainer t = invocation.getArgument(0);
+                    t.setUsername("Alice.Smith");
+                    t.setPassword("randomPass123");
+                    return null;
+                });
 
-        when(trainerRepository.save(any(Trainer.class))).thenAnswer(inv -> {
-            Trainer t = inv.getArgument(0);
-            t.setId(10L);
-            return t;
-        });
+        userCredentialGeneratorMock.when(() -> UserCredentialGenerator.checkNewPassword(anyString()))
+                .thenAnswer(invocation -> null);
 
-        UserCreatedResponseDto authDto = new UserCreatedResponseDto();
-        authDto.setUsername("Alice.Smith");
+        when(passwordEncoder.encode("randomPass123")).thenReturn("encodedRandomPass");
 
-        when(trainerMapper.toRegisteredDto(any(Trainer.class))).thenReturn(authDto);
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(trainerEntity);
+
+        UserCreatedResponseDto responseDto = new UserCreatedResponseDto();
+        responseDto.setUsername("Alice.Smith");
+        responseDto.setPassword("randomPass123");
 
         UserCreatedResponseDto created = trainerService.createTrainer(createDto);
 
+        assertNotNull(created);
         assertEquals("Alice.Smith", created.getUsername());
-        verify(trainerRepository).save(trainerEntity);
-        authenticationMock.verifyNoInteractions();
+        assertEquals("randomPass123", created.getPassword());
+        verify(trainerRepository).save(any(Trainer.class));
     }
 
     @Test
     void testUpdateTrainer_Success() {
         TrainerUpdateRequestDto updateDto = new TrainerUpdateRequestDto();
         updateDto.setUsername("john.doe");
-        updateDto.setPassword("secret");
         updateDto.setFirstName("John");
         updateDto.setLastName("Doe");
         updateDto.setSpecializationId(1L);
         updateDto.setIsActive(true);
 
-        Trainer trainerEntity = new Trainer();
-        trainerEntity.setUsername("john.doe");
-        trainerEntity.setPassword("secret");
-        trainerEntity.setFirstName("John");
-        trainerEntity.setLastName("Doe");
-        trainerEntity.setIsActive(true);
+        Trainer existingTrainer = new Trainer();
+        existingTrainer.setUsername("john.doe");
+        existingTrainer.setFirstName("OldJohn");
+        existingTrainer.setLastName("OldDoe");
+        existingTrainer.setIsActive(true);
 
         TrainingType trainingType = new TrainingType();
         trainingType.setId(1L);
-        when(trainingTypeRepository.findById(1L)).thenReturn(java.util.Optional.of(trainingType));
+        when(trainingTypeRepository.findById(1L)).thenReturn(Optional.of(trainingType));
+        when(trainerRepository.findByUsername("john.doe")).thenReturn(Optional.of(existingTrainer));
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(existingTrainer);
 
-        when(Authentication.authenticateUser(eq("john.doe"), eq("secret"), any())).thenReturn(trainerEntity);
-        when(trainerRepository.save(any(Trainer.class))).thenReturn(trainerEntity);
-
-        TrainerProfileResponseDto profile = new TrainerProfileResponseDto();
-        profile.setUsername("john.doe");
-        profile.setFirstName("John");
-        profile.setLastName("Doe");
-        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profile);
+        TrainerProfileResponseDto profileDto = new TrainerProfileResponseDto();
+        profileDto.setUsername("john.doe");
+        profileDto.setFirstName("John");
+        profileDto.setLastName("Doe");
+        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
 
         TrainerProfileResponseDto updated = trainerService.updateTrainer(updateDto);
 
+        assertNotNull(updated);
         assertEquals("john.doe", updated.getUsername());
         assertEquals("John", updated.getFirstName());
         assertEquals("Doe", updated.getLastName());
-        verify(trainerRepository).save(trainerEntity);
-    }
-
-    @Test
-    void testGetTrainer_Success() {
-        Trainer trainerEntity = new Trainer();
-        trainerEntity.setId(30L);
-        trainerEntity.setUsername("Alice.Smith");
-
-        when(trainerRepository.findById(30L)).thenReturn(Optional.of(trainerEntity));
-
-        TrainerProfileResponseDto profileDto = new TrainerProfileResponseDto();
-        profileDto.setId(30L);
-        profileDto.setUsername("Alice.Smith");
-
-        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
-
-        TrainerProfileResponseDto found = trainerService.getTrainer(30L);
-
-        assertNotNull(found);
-        assertEquals(30L, found.getId());
-        verify(trainerRepository).findById(30L);
-    }
-
-    @Test
-    void testGetTrainer_NotFound() {
-        when(trainerRepository.findById(999L)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> trainerService.getTrainer(999L));
+        verify(trainerRepository).save(any(Trainer.class));
     }
 
     @Test
     void testGetByUsername_Success() {
         String username = "Alice.Smith";
-        String password = "secretPass";
+
         Trainer trainerEntity = new Trainer();
         trainerEntity.setUsername(username);
-        trainerEntity.setPassword(password);
+        trainerEntity.setFirstName("Alice");
+        trainerEntity.setLastName("Smith");
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenReturn(trainerEntity);
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainerEntity));
 
         TrainerProfileResponseDto profileDto = new TrainerProfileResponseDto();
         profileDto.setUsername(username);
+        profileDto.setFirstName("Alice");
+        profileDto.setLastName("Smith");
 
-        when(trainerMapper.toProfileDTO(trainerEntity)).thenReturn(profileDto);
+        when(trainerMapper.toProfileDTO(any(Trainer.class))).thenReturn(profileDto);
 
-        TrainerProfileResponseDto found = trainerService.getByUsername(username, password);
+        TrainerProfileResponseDto found = trainerService.getByUsername(username);
+
         assertEquals(username, found.getUsername());
-        // Repository interactions occur inside the static method, so no direct verification here.
+        assertEquals("Alice", found.getFirstName());
+        assertEquals("Smith", found.getLastName());
     }
 
     @Test
     void testGetByUsername_NotFound() {
         String username = "NoUser";
-        String password = "anyPass";
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenThrow(new RuntimeException("Trainer not found"));
+        lenient().when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> trainerService.getByUsername(username, password));
+        assertThrows(RuntimeException.class, () -> trainerService.getByUsername(username));
     }
 
     @Test
     void testChangePassword_Success() {
+        String username = "TrainerUser";
+        String oldPassword = "oldPass";
+        String newPassword = "newPass123";
+
         Trainer trainerEntity = new Trainer();
-        trainerEntity.setUsername("TrainerUser");
-        trainerEntity.setPassword("oldPass");
+        trainerEntity.setUsername(username);
+        trainerEntity.setPassword("encodedOldPass");
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("TrainerUser"), eq("oldPass"), any())
-        ).thenReturn(trainerEntity);
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainerEntity));
+        when(passwordEncoder.matches(eq(oldPassword), anyString())).thenReturn(true);
+        when(passwordEncoder.encode(newPassword)).thenReturn("encodedNewPass");
 
-        // For a successful password change, let checkNewPassword execute normally (void method does nothing)
-        when(trainerRepository.save(any(Trainer.class))).thenAnswer(inv -> inv.getArgument(0));
+        userCredentialGeneratorMock.when(() -> UserCredentialGenerator.checkNewPassword(anyString()))
+                .thenAnswer(invocation -> null);
 
-        trainerService.changePassword("TrainerUser", "oldPass", "newPass123");
-        assertEquals("newPass123", trainerEntity.getPassword());
-        verify(trainerRepository).save(trainerEntity);
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(trainerEntity);
+
+        trainerService.changePassword(username, oldPassword, newPassword);
+
+        verify(trainerRepository).save(any(Trainer.class));
+        assertEquals("encodedNewPass", trainerEntity.getPassword());
     }
 
     @Test
     void testChangePassword_WeakPassword() {
+        String username = "abc";
+        String oldPassword = "abc123";
+        String weakPassword = "short";
+
         Trainer trainerEntity = new Trainer();
-        trainerEntity.setUsername("abc");
-        trainerEntity.setPassword("abc123");
+        trainerEntity.setUsername(username);
+        trainerEntity.setPassword("encodedOldPass");
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("abc"), eq("abc123"), any())
-        ).thenReturn(trainerEntity);
+        lenient().when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainerEntity));
+        lenient().when(passwordEncoder.matches(eq(oldPassword), anyString())).thenReturn(true);
 
-        userCredentialGeneratorMock.when(() ->
-                UserCredentialGenerator.checkNewPassword("short")
-        ).thenThrow(new IllegalArgumentException("Password must be 10+ chars"));
+        userCredentialGeneratorMock.when(() -> UserCredentialGenerator.checkNewPassword(weakPassword))
+                .thenThrow(new RuntimeException("Password must be 10+ chars"));
 
-        assertThrows(IllegalArgumentException.class, () ->
-                trainerService.changePassword("abc", "abc123", "short"));
+        assertThrows(RuntimeException.class, () ->
+                trainerService.changePassword(username, oldPassword, weakPassword));
 
         verify(trainerRepository, never()).save(any());
     }
 
     @Test
     void testToggleActive_Success() {
+        String username = "Alice.Smith";
+
         Trainer trainerEntity = new Trainer();
-        trainerEntity.setUsername("Alice.Smith");
-        trainerEntity.setPassword("randomPass123");
+        trainerEntity.setUsername(username);
         trainerEntity.setIsActive(true);
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("Alice.Smith"), eq("randomPass123"), any())
-        ).thenReturn(trainerEntity);
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainerEntity));
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(trainerEntity);
 
-        when(trainerRepository.save(trainerEntity)).thenReturn(trainerEntity);
+        trainerService.toggleActive(username);
 
-        trainerService.toggleActive("Alice.Smith", "randomPass123");
         assertFalse(trainerEntity.getIsActive());
-        verify(trainerRepository).save(trainerEntity);
+        verify(trainerRepository).save(any(Trainer.class));
     }
 
     @Test
@@ -272,10 +268,13 @@ class TrainerServiceTest {
         t1.setUsername("trainer1");
         Trainer t2 = new Trainer();
         t2.setUsername("trainer2");
-        when(trainerRepository.findAll()).thenReturn(Arrays.asList(t1, t2));
+        List<Trainer> trainers = Arrays.asList(t1, t2);
 
-        List<Trainer> all = trainerService.getAllTrainers();
-        assertEquals(2, all.size());
+        when(trainerRepository.findAll()).thenReturn(trainers);
+
+        List<Trainer> result = trainerService.getAllTrainers();
+
+        assertEquals(2, result.size());
         verify(trainerRepository).findAll();
     }
 }

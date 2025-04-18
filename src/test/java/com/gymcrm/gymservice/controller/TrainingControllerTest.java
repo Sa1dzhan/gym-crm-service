@@ -1,6 +1,7 @@
 package com.gymcrm.gymservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymcrm.config.JwtUtil;
 import com.gymcrm.config.TestConfig;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TrainingController;
@@ -14,8 +15,7 @@ import com.gymcrm.service.TrainingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,39 +25,34 @@ import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TrainingController.class)
-@Import({GlobalExceptionHandler.class, TestConfig.class, TrainingControllerTest.TestConfig.class})
+@Import({GlobalExceptionHandler.class, TestConfig.class})
 public class TrainingControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private TrainingService trainingService;
+
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public TrainingService trainingService() {
-            return org.mockito.Mockito.mock(TrainingService.class);
-        }
-    }
-
     @Test
     void testGetTraineeTrainings_Success() throws Exception {
         TraineeTrainingsListRequestDto reqDto = new TraineeTrainingsListRequestDto();
-        reqDto.setUsername("traineeUser");
-        reqDto.setPassword("pass");
         reqDto.setPeriodFrom(new Date());
         reqDto.setPeriodTo(new Date());
         reqDto.setTrainerName("Trainer A");
@@ -75,14 +70,15 @@ public class TrainingControllerTest {
 
         List<TraineeTrainingsListResponseDto> responseList = Collections.singletonList(respDto);
 
-        when(trainingService.getTraineeTrainings(any(TraineeTrainingsListRequestDto.class)))
+        when(trainingService.getTraineeTrainings(anyString(), any(TraineeTrainingsListRequestDto.class)))
                 .thenReturn(responseList);
 
-        String url = "/api/training/traineeUser/trainee/trainings";
+        String url = "/api/training/trainee/trainings";
 
         mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reqDto))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .with(user("traineeUser").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].trainingName").value("Morning Workout"))
                 .andExpect(jsonPath("$[0].trainingType.trainingTypeName").value("Strength training"))
@@ -92,8 +88,6 @@ public class TrainingControllerTest {
     @Test
     void testGetTrainerTrainings_Success() throws Exception {
         TrainerTrainingsListRequestDto reqDto = new TrainerTrainingsListRequestDto();
-        reqDto.setUsername("trainerUser");
-        reqDto.setPassword("pass");
         reqDto.setPeriodFrom(new Date());
         reqDto.setPeriodTo(new Date());
         reqDto.setTraineeName("Trainee B");
@@ -110,14 +104,15 @@ public class TrainingControllerTest {
 
         List<TrainerTrainingsListResponseDto> responseList = Collections.singletonList(respDto);
 
-        when(trainingService.getTrainerTrainings(any(TrainerTrainingsListRequestDto.class)))
+        when(trainingService.getTrainerTrainings(anyString(), any(TrainerTrainingsListRequestDto.class)))
                 .thenReturn(responseList);
 
-        String url = "/api/training/trainerUser/trainer/trainings";
+        String url = "/api/training/trainer/trainings";
 
         mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reqDto))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .with(user("trainerUser").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].trainingName").value("Evening Session"))
                 .andExpect(jsonPath("$[0].trainingType.trainingTypeName").value("Cardio"))
@@ -127,17 +122,15 @@ public class TrainingControllerTest {
     @Test
     void testAddTrainings_Success() throws Exception {
         AddTrainingRequestDto reqDto = new AddTrainingRequestDto();
-        reqDto.setUsername("trainerUser");
-        reqDto.setPassword("pass");
         reqDto.setTrainingName("Afternoon Workout");
-        doNothing().when(trainingService).addTraining(any(AddTrainingRequestDto.class));
+        doNothing().when(trainingService).addTraining(anyString(), any(AddTrainingRequestDto.class));
 
         String url = "/api/training/add/trainings";
 
         mockMvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reqDto))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .with(user("trainerUser").roles("USER")))
                 .andExpect(status().isOk());
     }
 }
-

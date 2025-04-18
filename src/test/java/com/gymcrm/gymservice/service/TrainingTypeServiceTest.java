@@ -5,7 +5,6 @@ import com.gymcrm.dao.GeneralUserRepository;
 import com.gymcrm.dao.TrainingTypeRepository;
 import com.gymcrm.dto.training_type.TrainingTypeDto;
 import com.gymcrm.model.TrainingType;
-import com.gymcrm.model.User;
 import com.gymcrm.service.impl.TrainingTypesServiceImpl;
 import com.gymcrm.util.Authentication;
 import org.junit.jupiter.api.AfterEach;
@@ -18,13 +17,12 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TrainingTypeServiceTest {
@@ -54,14 +52,8 @@ public class TrainingTypeServiceTest {
     }
 
     @Test
-    void getTrainingTypesList_Success() {
-        String username = "user";
-        String password = "pass";
-
-        User dummyUser = new User();
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenReturn(dummyUser);
+    void testGetTrainingTypesList_Success() {
+        String username = "testuser";
 
         TrainingType tt1 = new TrainingType();
         tt1.setId(1L);
@@ -82,31 +74,23 @@ public class TrainingTypeServiceTest {
         when(trainingTypeMapper.toResponseDTO(tt1)).thenReturn(dto1);
         when(trainingTypeMapper.toResponseDTO(tt2)).thenReturn(dto2);
 
-        List<TrainingTypeDto> result = trainingTypesService.getTrainingTypesList(username, password);
+        List<TrainingTypeDto> result = trainingTypesService.getTrainingTypesList(username);
 
-        assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Cardio", result.get(0).getTrainingTypeName());
         assertEquals("Strength", result.get(1).getTrainingTypeName());
 
-        authenticationMock.verify(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        );
+        verify(trainingTypeRepository).findAll();
     }
 
     @Test
-    void getTrainingTypesList_Failed() {
-        String username = "user";
-        String password = "wrongPass";
+    void testGetTrainingTypesList_Empty() {
+        String username = "testuser";
+        when(trainingTypeRepository.findAll()).thenReturn(Collections.emptyList());
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenThrow(new RuntimeException("Authentication failed"));
+        List<TrainingTypeDto> result = trainingTypesService.getTrainingTypesList(username);
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () ->
-                trainingTypesService.getTrainingTypesList(username, password)
-        );
-
-        assertEquals("Authentication failed", ex.getMessage());
+        assertTrue(result.isEmpty());
+        verify(trainingTypeRepository).findAll();
     }
 }

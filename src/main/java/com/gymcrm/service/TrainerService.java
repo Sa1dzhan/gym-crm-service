@@ -15,13 +15,11 @@ public interface TrainerService {
 
     TrainerProfileResponseDto updateTrainer(TrainerUpdateRequestDto trainer);
 
-    TrainerProfileResponseDto getTrainer(Long id);
-
-    TrainerProfileResponseDto getByUsername(String username, String password);
+    TrainerProfileResponseDto getByUsername(String username);
 
     void changePassword(String username, String oldPassword, String newPassword);
 
-    void toggleActive(String username, String password);
+    void toggleActive(String username);
 
     List<Trainer> getAllTrainers();
 }

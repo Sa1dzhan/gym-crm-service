@@ -3,9 +3,6 @@ package com.gymcrm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.text.NumberFormat;
 
@@ -29,11 +26,6 @@ public class GymCrmApplication {
         log.info("Allocated memory: " + format.format(allocatedMemory / mb) + mega);
         log.info("Max memory: " + format.format(maxMemory / mb) + mega);
         log.info("Total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / mb) + mega);
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
 

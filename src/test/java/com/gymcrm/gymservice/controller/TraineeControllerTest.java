@@ -1,9 +1,13 @@
 package com.gymcrm.gymservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymcrm.config.JwtUtil;
+import com.gymcrm.config.LoginAttemptService;
 import com.gymcrm.config.TestConfig;
 import com.gymcrm.controller.GlobalExceptionHandler;
 import com.gymcrm.controller.TraineeController;
+import com.gymcrm.dto.ChangePasswordRequestDto;
+import com.gymcrm.dto.LoginRequestDto;
 import com.gymcrm.dto.UserCreatedResponseDto;
 import com.gymcrm.dto.trainee.TraineeCreateRequestDto;
 import com.gymcrm.dto.trainee.TraineeNotAssignedTrainersDto;
@@ -11,13 +15,16 @@ import com.gymcrm.dto.trainee.TraineeProfileResponseDto;
 import com.gymcrm.dto.trainee.TraineeUpdateRequestDto;
 import com.gymcrm.dto.trainer.TrainerShortProfileDto;
 import com.gymcrm.service.TraineeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -25,33 +32,43 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TraineeController.class)
-@Import({GlobalExceptionHandler.class, TestConfig.class, TraineeControllerTest.TestConfig.class})
+@Import({GlobalExceptionHandler.class, TestConfig.class})
 public class TraineeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private TraineeService traineeService;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private LoginAttemptService loginAttemptService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public TraineeService traineeService() {
-            return org.mockito.Mockito.mock(TraineeService.class);
-        }
+    private Authentication authentication;
+    private SecurityContext securityContext;
+
+    @BeforeEach
+    void setUp() {
+        authentication = mock(Authentication.class);
+        securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getName()).thenReturn("alice");
     }
 
     @Test
@@ -64,34 +81,67 @@ public class TraineeControllerTest {
 
         UserCreatedResponseDto authResponse = new UserCreatedResponseDto();
         authResponse.setUsername("alice.smith");
+        authResponse.setPassword("generatedPass");
 
         when(traineeService.createTrainee(any(TraineeCreateRequestDto.class)))
                 .thenReturn(authResponse);
+        when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
 
         String url = "/api/trainee/register";
         mockMvc.perform(post(url)
                         .content(objectMapper.writeValueAsString(createDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("alice.smith"));
+                .andExpect(jsonPath("$.username").value("alice.smith"))
+                .andExpect(jsonPath("$.password").value("generatedPass"))
+                .andExpect(jsonPath("$.token").value("jwt-token"));
     }
 
     @Test
     void testLogin_Success() throws Exception {
-        doNothing().when(traineeService).login(eq("alice"), eq("password"));
+        LoginRequestDto loginDto = new LoginRequestDto();
+        loginDto.setUsername("alice");
+        loginDto.setPassword("password");
 
-        String url = "/api/trainee/alice/login?password=password";
-        mockMvc.perform(get(url)
+        doNothing().when(traineeService).login(eq("alice"), eq("password"));
+        when(loginAttemptService.isBlocked(anyString())).thenReturn(false);
+        when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
+
+        String url = "/api/trainee/login";
+        mockMvc.perform(post(url)
+                        .content(objectMapper.writeValueAsString(loginDto))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("jwt-token"));
+    }
+
+    @Test
+    void testLogin_Blocked() throws Exception {
+        LoginRequestDto loginDto = new LoginRequestDto();
+        loginDto.setUsername("alice");
+        loginDto.setPassword("password");
+
+        when(loginAttemptService.isBlocked("alice")).thenReturn(true);
+
+        String url = "/api/trainee/login";
+        mockMvc.perform(post(url)
+                        .content(objectMapper.writeValueAsString(loginDto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isTooManyRequests());
     }
 
     @Test
     void testChangePassword_Success() throws Exception {
+        ChangePasswordRequestDto changePasswordDto = new ChangePasswordRequestDto();
+        changePasswordDto.setOldPassword("oldPass");
+        changePasswordDto.setNewPassword("newPass");
+
         doNothing().when(traineeService).changePassword(eq("alice"), eq("oldPass"), eq("newPass"));
 
-        String url = "/api/trainee/alice/update/password?oldPassword=oldPass&newPassword=newPass";
+        String url = "/api/trainee/update/password";
         mockMvc.perform(put(url)
+                        .with(user("alice"))
+                        .content(objectMapper.writeValueAsString(changePasswordDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -108,11 +158,12 @@ public class TraineeControllerTest {
         profile.setIsActive(true);
         profile.setTrainers(null);
 
-        when(traineeService.getByUsername(eq("alice"), eq("password")))
+        when(traineeService.getByUsername(eq("alice")))
                 .thenReturn(profile);
 
-        String url = "/api/trainee/alice?password=password";
+        String url = "/api/trainee/profile";
         mockMvc.perform(get(url)
+                        .with(user("alice"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("alice"))
@@ -140,19 +191,27 @@ public class TraineeControllerTest {
 
         when(traineeService.updateTrainee(any(TraineeUpdateRequestDto.class))).thenReturn(profile);
 
-        String url = "/api/trainee/alice/update/profile";
+        String url = "/api/trainee/update/profile";
         mockMvc.perform(put(url)
+                        .with(user("alice"))
                         .content(objectMapper.writeValueAsString(updateDto))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("alice"))
+                .andExpect(jsonPath("$.lastName").value("Johnson"));
     }
 
     @Test
     void testDeleteTrainee_Success() throws Exception {
+        LoginRequestDto loginDto = new LoginRequestDto();
+        loginDto.setPassword("password");
+
         doNothing().when(traineeService).deleteTraineeByUsername(eq("alice"), eq("password"));
 
-        String url = "/api/trainee/alice?password=password";
+        String url = "/api/trainee/profile";
         mockMvc.perform(delete(url)
+                        .with(user("alice"))
+                        .content(objectMapper.writeValueAsString(loginDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -166,11 +225,12 @@ public class TraineeControllerTest {
         TraineeNotAssignedTrainersDto notAssignedDto =
                 new TraineeNotAssignedTrainersDto(Collections.singletonList(trainerDto));
 
-        when(traineeService.getTrainersNotAssigned(eq("alice"), eq("password")))
+        when(traineeService.getTrainersNotAssigned(eq("alice")))
                 .thenReturn(notAssignedDto);
 
-        String url = "/api/trainee/alice/not-assigned-trainers?password=password";
+        String url = "/api/trainee/not-assigned-trainers";
         mockMvc.perform(get(url)
+                        .with(user("alice"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.trainers[0].username").value("trainer1"));
@@ -192,11 +252,12 @@ public class TraineeControllerTest {
 
         List<TrainerShortProfileDto> responseList = Arrays.asList(trainerDto1, trainerDto2);
 
-        when(traineeService.updateTrainersList(eq("alice"), eq("password"), any(List.class)))
+        when(traineeService.updateTrainersList(eq("alice"), any(List.class)))
                 .thenReturn(responseList);
 
-        String url = "/api/trainee/alice/trainers?password=password";
+        String url = "/api/trainee/trainers";
         mockMvc.perform(put(url)
+                        .with(user("alice"))
                         .content(objectMapper.writeValueAsString(trainerUsernames))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -206,12 +267,12 @@ public class TraineeControllerTest {
 
     @Test
     void testToggleTraineeActive_Success() throws Exception {
-        doNothing().when(traineeService).toggleActive(eq("alice"), eq("password"));
+        doNothing().when(traineeService).toggleActive(eq("alice"));
 
-        String url = "/api/trainee/alice/activate?password=password";
+        String url = "/api/trainee/activate";
         mockMvc.perform(patch(url)
+                        .with(user("alice"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 }
-

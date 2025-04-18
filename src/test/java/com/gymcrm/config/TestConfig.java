@@ -13,4 +13,9 @@ public class TestConfig {
     public TransactionIdFilter transactionIdFilter() {
         return new TransactionIdFilter();
     }
-} 
+
+    @Bean
+    public LoginAttemptService loginAttemptService() {
+        return new LoginAttemptService();
+    }
+}

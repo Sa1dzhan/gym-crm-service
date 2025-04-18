@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,6 +53,9 @@ class TraineeServiceTest {
 
     @Mock
     private UserMetrics userMetrics;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;
@@ -82,6 +86,7 @@ class TraineeServiceTest {
         traineeEntity.setLastName("Doe");
 
         when(traineeMapper.toEntity(any(TraineeCreateRequestDto.class))).thenReturn(traineeEntity);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
         userCredentialGeneratorMock.when(() ->
                 UserCredentialGenerator.generateUserCredentials(eq(traineeEntity), any())
@@ -99,8 +104,6 @@ class TraineeServiceTest {
 
         UserCreatedResponseDto authDto = new UserCreatedResponseDto();
         authDto.setUsername("John.Doe");
-
-        when(traineeMapper.toRegisteredDto(any(Trainee.class))).thenReturn(authDto);
 
         UserCreatedResponseDto result = traineeService.createTrainee(createDto);
 
@@ -121,17 +124,13 @@ class TraineeServiceTest {
         existingTrainee.setPassword("oldPass");
         existingTrainee.setIsActive(true);
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("Jane.Smith"), eq("oldPass"), any())
-        ).thenReturn(existingTrainee);
+        when(traineeRepository.findByUsername("Jane.Smith")).thenReturn(Optional.of(existingTrainee));
 
         Trainee updatedTrainee = new Trainee();
         updatedTrainee.setUsername("Jane.Smith");
         updatedTrainee.setPassword("oldPass");
         updatedTrainee.setAddress("New Address");
         updatedTrainee.setIsActive(true);
-
-        when(traineeMapper.toEntity(any(TraineeUpdateRequestDto.class))).thenReturn(updatedTrainee);
 
         when(traineeRepository.save(any(Trainee.class))).thenReturn(updatedTrainee);
 
@@ -144,9 +143,7 @@ class TraineeServiceTest {
         TraineeProfileResponseDto result = traineeService.updateTrainee(updateDto);
 
         assertEquals("New Address", result.getAddress());
-        verify(traineeRepository).save(updatedTrainee);
-        authenticationMock.verify(() ->
-                Authentication.authenticateUser(eq("Jane.Smith"), eq("oldPass"), any()));
+        verify(traineeRepository).save(any(Trainee.class));
     }
 
     @Test
@@ -155,168 +152,135 @@ class TraineeServiceTest {
         updateDto.setUsername("BadUser");
         updateDto.setPassword("wrongPass");
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("BadUser"), eq("wrongPass"), any())
-        ).thenThrow(new RuntimeException("Authentication failed"));
+        when(traineeRepository.findByUsername("BadUser")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> traineeService.updateTrainee(updateDto));
         verify(traineeRepository, never()).save(any());
     }
 
     @Test
-    void testGetTrainee_Success() {
-        Trainee traineeEntity = new Trainee();
-        traineeEntity.setId(300L);
-        traineeEntity.setUsername("johnny");
-
-        when(traineeRepository.findById(300L)).thenReturn(Optional.of(traineeEntity));
-
-        TraineeProfileResponseDto profileDto = new TraineeProfileResponseDto();
-        profileDto.setId(300L);
-        profileDto.setUsername("johnny");
-
-        when(traineeMapper.toProfileDTO(any(Trainee.class))).thenReturn(profileDto);
-
-        TraineeProfileResponseDto result = traineeService.getTrainee(300L);
-
-        assertNotNull(result);
-        assertEquals(300L, result.getId());
-        verify(traineeRepository).findById(300L);
-    }
-
-    @Test
-    void testGetTrainee_NotFound() {
-        when(traineeRepository.findById(anyLong())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> traineeService.getTrainee(999L));
-    }
-
-    @Test
     void testGetByUsername_Success() {
         String username = "coolUser";
-        String password = "secret";
+
         Trainee traineeEntity = new Trainee();
         traineeEntity.setUsername(username);
-        traineeEntity.setPassword(password);
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenReturn(traineeEntity);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
 
         TraineeProfileResponseDto profileDto = new TraineeProfileResponseDto();
         profileDto.setUsername(username);
 
         when(traineeMapper.toProfileDTO(traineeEntity)).thenReturn(profileDto);
 
-        TraineeProfileResponseDto result = traineeService.getByUsername(username, password);
+        TraineeProfileResponseDto result = traineeService.getByUsername(username);
         assertEquals(username, result.getUsername());
     }
 
     @Test
     void testGetByUsername_AuthFails() {
         String username = "unknown";
-        String password = "pass";
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenThrow(new RuntimeException("Authentication failed"));
 
-        assertThrows(RuntimeException.class, () -> traineeService.getByUsername(username, password));
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> traineeService.getByUsername(username));
     }
 
     @Test
     void testChangePassword_Success() {
+        String username = "John.Doe3";
+        String oldPassword = "zxcvbnmasd";
+        String newPassword = "newPass123";
+
         Trainee traineeEntity = new Trainee();
-        traineeEntity.setUsername("John.Doe3");
-        traineeEntity.setPassword("zxcvbnmasd");
+        traineeEntity.setUsername(username);
+        traineeEntity.setPassword("encodedOldPassword");
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("John.Doe3"), eq("zxcvbnmasd"), any())
-        ).thenReturn(traineeEntity);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
+        when(passwordEncoder.matches(oldPassword, traineeEntity.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode(newPassword)).thenReturn("encodedNewPassword");
 
-        when(traineeRepository.save(any(Trainee.class))).thenAnswer(inv -> inv.getArgument(0));
+        traineeService.changePassword(username, oldPassword, newPassword);
 
-        traineeService.changePassword("John.Doe3", "zxcvbnmasd", "newPass123");
-
-        assertEquals("newPass123", traineeEntity.getPassword());
         verify(traineeRepository).save(traineeEntity);
     }
 
     @Test
     void testChangePassword_WeakPassword() {
-        Trainee traineeEntity = new Trainee();
-        traineeEntity.setUsername("abc");
-        traineeEntity.setPassword("abc123");
+        String username = "abc";
+        String oldPassword = "abc123";
+        String weakPassword = "short";
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("abc"), eq("abc123"), any())
-        ).thenReturn(traineeEntity);
+        Trainee traineeEntity = new Trainee();
+        traineeEntity.setUsername(username);
+        traineeEntity.setPassword("encodedPassword");
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
+        when(passwordEncoder.matches(oldPassword, traineeEntity.getPassword())).thenReturn(true);
 
         userCredentialGeneratorMock.when(() ->
-                UserCredentialGenerator.checkNewPassword("short")
+                UserCredentialGenerator.checkNewPassword(weakPassword)
         ).thenThrow(new IllegalArgumentException("Password must be 10+ chars"));
 
         assertThrows(IllegalArgumentException.class, () ->
-                traineeService.changePassword("abc", "abc123", "short"));
+                traineeService.changePassword(username, oldPassword, weakPassword));
 
         verify(traineeRepository, never()).save(any());
     }
 
     @Test
     void testToggleActive_Success() {
+        String username = "John.Doe3";
+
         Trainee traineeEntity = new Trainee();
-        traineeEntity.setUsername("John.Doe3");
-        traineeEntity.setPassword("zxcvbnmasd");
+        traineeEntity.setUsername(username);
         traineeEntity.setIsActive(true);
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("John.Doe3"), eq("zxcvbnmasd"), any())
-        ).thenReturn(traineeEntity);
-
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
         when(traineeRepository.save(traineeEntity)).thenReturn(traineeEntity);
 
-        traineeService.toggleActive("John.Doe3", "zxcvbnmasd");
+        traineeService.toggleActive(username);
         assertFalse(traineeEntity.getIsActive(), "Should have toggled from true to false");
         verify(traineeRepository).save(traineeEntity);
     }
 
     @Test
     void testDeleteTraineeByUsername_Success() {
+        String username = "delByUsername";
+        String password = "p123";
+
         Trainee traineeEntity = new Trainee();
         traineeEntity.setId(501L);
-        traineeEntity.setUsername("delByUsername");
-        traineeEntity.setPassword("p123");
+        traineeEntity.setUsername(username);
+        traineeEntity.setPassword("encodedPassword");
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("delByUsername"), eq("p123"), any())
-        ).thenReturn(traineeEntity);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
+        when(passwordEncoder.matches(password, traineeEntity.getPassword())).thenReturn(true);
 
-        traineeService.deleteTraineeByUsername("delByUsername", "p123");
+        traineeService.deleteTraineeByUsername(username, password);
 
         verify(traineeRepository).delete(traineeEntity);
     }
 
     @Test
     void testDeleteTraineeByUsername_NotFound() {
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq("delByUsername"), eq("p123"), any())
-        ).thenThrow(new RuntimeException("User not found"));
+        String username = "delByUsername";
+        String password = "p123";
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () ->
-                traineeService.deleteTraineeByUsername("delByUsername", "p123"));
+                traineeService.deleteTraineeByUsername(username, password));
     }
 
     @Test
     void testGetTrainersNotAssigned_Success() {
         String username = "traineeUser";
-        String password = "p";
 
         Trainee traineeEntity = new Trainee();
         traineeEntity.setUsername(username);
-        traineeEntity.setPassword(password);
         traineeEntity.setIsActive(true);
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenReturn(traineeEntity);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
 
         Trainer trainer1 = new Trainer();
         trainer1.setUsername("trainer1");
@@ -339,22 +303,19 @@ class TraineeServiceTest {
         when(trainerMapper.toShortProfileDto(trainer2)).thenReturn(dto2);
         when(trainerMapper.toShortProfileDto(trainer3)).thenReturn(dto3);
 
-        TraineeNotAssignedTrainersDto result = traineeService.getTrainersNotAssigned(username, password);
+        TraineeNotAssignedTrainersDto result = traineeService.getTrainersNotAssigned(username);
         assertEquals(3, result.getTrainers().size());
     }
 
     @Test
     void testUpdateTrainersList_Success() {
         String username = "John.Doe3";
-        String password = "zxcvbnmasd";
+
         Trainee traineeEntity = new Trainee();
         traineeEntity.setUsername(username);
-        traineeEntity.setPassword(password);
         traineeEntity.setTrainers(new HashSet<>());
 
-        authenticationMock.when(() ->
-                Authentication.authenticateUser(eq(username), eq(password), any())
-        ).thenReturn(traineeEntity);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(traineeEntity));
 
         List<String> trainerUsernames = Arrays.asList("A", "B");
 
@@ -376,7 +337,7 @@ class TraineeServiceTest {
         when(trainerMapper.toShortProfileDto(trainerA)).thenReturn(dtoA);
         when(trainerMapper.toShortProfileDto(trainerB)).thenReturn(dtoB);
 
-        List<TrainerShortProfileDto> result = traineeService.updateTrainersList(username, password, trainerUsernames);
+        List<TrainerShortProfileDto> result = traineeService.updateTrainersList(username, trainerUsernames);
 
         assertEquals(2, result.size());
         verify(trainerRepository).findAllByUsername(trainerUsernames);
