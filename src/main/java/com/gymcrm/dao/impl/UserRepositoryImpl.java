@@ -71,7 +71,6 @@ public abstract class UserRepositoryImpl<T extends User> implements UserReposito
     public T save(T entity) {
         if (entity.getId() == null) {
             em.persist(entity);
-            em.flush();
             return entity;
         } else {
             return em.merge(entity);

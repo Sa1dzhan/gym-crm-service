@@ -47,7 +47,6 @@ public class TrainerServiceImpl implements TrainerService {
         log.info("Created Trainer with ID={}, username={}", savedTrainer.getId(), savedTrainer.getUsername());
         userMetrics.incrementUserRegistration();
 
-        // Return DTO directly, do not set plain password on entity
         return new UserCreatedResponseDto(savedTrainer.getUsername(), generatedPassword);
     }
 
