@@ -44,7 +44,7 @@ import java.util.Set;
 })
 public class Trainer extends User {
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "training_type_id", nullable = false)
     private TrainingType specialization;
 

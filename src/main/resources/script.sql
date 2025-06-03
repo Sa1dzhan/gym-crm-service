@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS trainee
 CREATE TABLE IF NOT EXISTS trainer
 (
     id               BIGINT        NOT NULL,
-    training_type_id BIGINT UNIQUE NOT NULL,
+    training_type_id BIGINT NOT NULL,
     CONSTRAINT trainer_pk PRIMARY KEY (id),
     CONSTRAINT fk_trainer_user FOREIGN KEY (id) REFERENCES user_acc (id) ON DELETE CASCADE
 );

@@ -27,12 +27,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         List<SimpleGrantedAuthority> authList = new ArrayList<>();
-        authList.add(new SimpleGrantedAuthority("USER"));
+        authList.add(new SimpleGrantedAuthority("ROLE_USER"));
 
         if (trainerRepository.existsByUsername(user.getUsername())) {
-            authList.add(new SimpleGrantedAuthority("TRAINER"));
+            authList.add(new SimpleGrantedAuthority("ROLE_TRAINER"));
         } else if (traineeRepository.existsByUsername(user.getUsername())) {
-            authList.add(new SimpleGrantedAuthority("TRAINEE"));
+            authList.add(new SimpleGrantedAuthority("ROLE_TRAINEE"));
         }
 
         return new org.springframework.security.core.userdetails.User(

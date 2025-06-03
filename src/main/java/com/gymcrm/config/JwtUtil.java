@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String jwtSecret = "GYM_CRM_APPLICATION";
+    private final String jwtSecret = "1234567890abcdefghijklmnopqrstuv";
     private final long jwtExpirationMs = 86400000; // 1 day
 
     private Key getSigningKey() {
