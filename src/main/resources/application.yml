@@ -14,6 +14,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+            loggerLevel: full
+
 
 management:
   endpoints:
@@ -27,6 +38,29 @@ management:
     export:
       prometheus:
         enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      workloadService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
 
 logging:
   level:
