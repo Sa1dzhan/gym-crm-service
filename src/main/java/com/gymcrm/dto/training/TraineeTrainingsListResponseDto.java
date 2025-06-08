@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -16,7 +16,7 @@ public class TraineeTrainingsListResponseDto {
     private String trainingName;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date trainingDate;
+    private LocalDate trainingDate;
 
     private TrainingTypeDto trainingType;
 

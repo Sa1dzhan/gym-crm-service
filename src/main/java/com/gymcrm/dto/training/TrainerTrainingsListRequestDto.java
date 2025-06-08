@@ -4,7 +4,7 @@ import com.gymcrm.dto.UserCreatedResponseDto;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -14,10 +14,10 @@ import java.util.Date;
 public class TrainerTrainingsListRequestDto extends UserCreatedResponseDto {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date periodFrom;
+    private LocalDate periodFrom;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date periodTo;
+    private LocalDate periodTo;
 
     private String traineeName;
 }

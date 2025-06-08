@@ -57,7 +57,6 @@ public class TrainerControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Mock the Authentication and SecurityContext for secured endpoints
         authentication = mock(Authentication.class);
         securityContext = mock(SecurityContext.class);
 

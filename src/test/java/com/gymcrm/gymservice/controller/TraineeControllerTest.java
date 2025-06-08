@@ -27,9 +27,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -76,7 +76,7 @@ public class TraineeControllerTest {
         TraineeCreateRequestDto createDto = new TraineeCreateRequestDto();
         createDto.setFirstName("Alice");
         createDto.setLastName("Smith");
-        createDto.setDateOfBirth(new Date());
+        createDto.setDateOfBirth(LocalDate.of(2002, 3, 26));
         createDto.setAddress("123 Street");
 
         UserCreatedResponseDto authResponse = new UserCreatedResponseDto();
@@ -153,7 +153,7 @@ public class TraineeControllerTest {
         profile.setUsername("alice");
         profile.setFirstName("Alice");
         profile.setLastName("Smith");
-        profile.setDateOfBirth(new Date());
+        profile.setDateOfBirth(LocalDate.of(2002, 3, 26));
         profile.setAddress("123 Street");
         profile.setIsActive(true);
         profile.setTrainers(null);
@@ -175,7 +175,7 @@ public class TraineeControllerTest {
         TraineeUpdateRequestDto updateDto = new TraineeUpdateRequestDto();
         updateDto.setFirstName("Alice");
         updateDto.setLastName("Johnson");
-        updateDto.setDateOfBirth(new Date());
+        updateDto.setDateOfBirth(LocalDate.of(2002, 3, 26));
         updateDto.setAddress("456 Avenue");
         updateDto.setIsActive(true);
 
@@ -184,7 +184,7 @@ public class TraineeControllerTest {
         profile.setUsername("alice");
         profile.setFirstName("Alice");
         profile.setLastName("Johnson");
-        profile.setDateOfBirth(new Date());
+        profile.setDateOfBirth(LocalDate.of(2002, 3, 26));
         profile.setAddress("456 Avenue");
         profile.setIsActive(true);
         profile.setTrainers(null);

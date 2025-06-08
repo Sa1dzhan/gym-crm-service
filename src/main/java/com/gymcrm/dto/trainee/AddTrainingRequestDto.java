@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 
 @Data
@@ -29,7 +29,7 @@ public class AddTrainingRequestDto extends UserCreatedResponseDto {
 
     @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date trainingDate;
+    private LocalDate trainingDate;
 
     @NotNull
     private Long trainingDuration;

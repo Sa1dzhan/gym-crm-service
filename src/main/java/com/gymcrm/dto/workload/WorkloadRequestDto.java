@@ -1,10 +1,13 @@
 package com.gymcrm.dto.workload;
 
+import com.gymcrm.model.Trainer;
+import com.gymcrm.model.Training;
 import com.gymcrm.util.ActionType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 public class WorkloadRequestDto {
@@ -21,11 +24,24 @@ public class WorkloadRequestDto {
     private Boolean isActive;
 
     @NotNull
-    private Date trainingDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate trainingDate;
 
     @NotNull
     private Long trainingDuration;
 
     @NotNull
     private ActionType actionType;
+
+    public WorkloadRequestDto(Training training, ActionType action) {
+        Trainer trainer = training.getTrainer();
+
+        setUsername(trainer.getUsername());
+        setFirstName(trainer.getFirstName());
+        setLastName(trainer.getLastName());
+        setIsActive(trainer.getIsActive());
+        setTrainingDate(training.getTrainingDate());
+        setTrainingDuration(training.getTrainingDuration());
+        setActionType(action);
+    }
 }

@@ -8,7 +8,7 @@ import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +41,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     }
 
     @Override
-    public List<Training> findTrainingsForTrainee(String traineeUsername, Date fromDate, Date toDate, String trainerName, String trainingType) {
+    public List<Training> findTrainingsForTrainee(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainerName, String trainingType) {
         TypedQuery<Training> query = em.createNamedQuery("Training.findTrainingsForTrainee", Training.class);
         query.setParameter("traineeUsername", traineeUsername);
         query.setParameter("fromDate", fromDate);
@@ -52,7 +52,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     }
 
     @Override
-    public List<Training> findTrainingsForTrainer(String trainerUsername, Date fromDate, Date toDate, String traineeName) {
+    public List<Training> findTrainingsForTrainer(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeName) {
         TypedQuery<Training> query = em.createNamedQuery("Training.findTrainingsForTrainer", Training.class);
         query.setParameter("trainerUsername", trainerUsername);
         query.setParameter("fromDate", fromDate);
