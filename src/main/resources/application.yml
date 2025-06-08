@@ -24,6 +24,8 @@ spring:
             connectTimeout: 5000
             readTimeout: 5000
             loggerLevel: full
+    inetutils:
+      preferred-networks: 127.0.0.1
 
 
 management:
@@ -53,7 +55,7 @@ eureka:
 resilience4j:
   circuitbreaker:
     instances:
-      workloadService:
+      workload-service:
         registerHealthIndicator: true
         slidingWindowSize: 10
         permittedNumberOfCallsInHalfOpenState: 3

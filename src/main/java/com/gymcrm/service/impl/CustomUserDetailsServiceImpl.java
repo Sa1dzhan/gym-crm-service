@@ -4,10 +4,10 @@ import com.gymcrm.dao.GeneralUserRepository;
 import com.gymcrm.dao.TraineeRepository;
 import com.gymcrm.dao.TrainerRepository;
 import com.gymcrm.model.User;
+import com.gymcrm.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     private final GeneralUserRepository userRepository;
     private final TrainerRepository trainerRepository;
     private final TraineeRepository traineeRepository;

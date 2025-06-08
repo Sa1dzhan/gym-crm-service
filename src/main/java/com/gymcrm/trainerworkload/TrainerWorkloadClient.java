@@ -1,21 +1,43 @@
 package com.gymcrm.trainerworkload;
 
+import com.gymcrm.config.JwtUtil;
+import com.gymcrm.dto.workload.DurationRequestDto;
+import com.gymcrm.dto.workload.DurationResponseDto;
 import com.gymcrm.dto.workload.WorkloadRequestDto;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.context.annotation.Primary;
+import com.gymcrm.trainerworkload.read.WorkloadReadSummaryClient;
+import com.gymcrm.trainerworkload.update.WorkloadUpdateSummaryClient;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.stereotype.Service;
 
-@FeignClient(name = "workload-service", url = "http://localhost:8081", fallback = TrainerWorkloadClientFallback.class)
-@Primary
-public interface TrainerWorkloadClient {
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class TrainerWorkloadClient {
 
-    @PostMapping("/api/v1/workload/update")
-    ResponseEntity<?> updateTrainerWorkload(
-            @RequestBody WorkloadRequestDto request,
-            @RequestHeader("Authorization") String token,
-            @RequestHeader("transactionId") String transactionId
-    );
+    private final WorkloadUpdateSummaryClient updateClient;
+
+    private final WorkloadReadSummaryClient readClient;
+
+    private final JwtUtil jwtUtil;
+
+    private final String service = "workload";
+
+    public ResponseEntity<?> updateTrainerSummary(WorkloadRequestDto request) {
+        String transactionId = MDC.get("transactionId");
+        String authToken = jwtUtil.generateToken(service.concat(request.getUsername()));
+
+        log.info("Sending workload update request for: {}", request.getUsername());
+        return updateClient.updateTrainerSummary(request, authToken, transactionId);
+    }
+
+    public ResponseEntity<DurationResponseDto> getTrainerWorkload(DurationRequestDto request) {
+        String transactionId = MDC.get("transactionId");
+        String authToken = jwtUtil.generateToken(request.getUsername());
+
+        log.info("Requesting workload summary for: {}", request.getUsername());
+        return readClient.getTrainerWorkload(request, authToken, transactionId);
+    }
 }
