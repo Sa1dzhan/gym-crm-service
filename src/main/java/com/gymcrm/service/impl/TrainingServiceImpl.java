@@ -11,7 +11,10 @@ import com.gymcrm.metrics.TrainingMetrics;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
+import com.gymcrm.model.TrainingType;
 import com.gymcrm.service.TrainingService;
+import com.gymcrm.service.WorkloadService;
+import com.gymcrm.util.ActionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TrainingServiceImpl implements TrainingService {
     private final TrainingMetrics trainingMetrics;
+    private final WorkloadService workloadService;
 
     private final TrainingMapper trainingMapper;
     private final TrainingRepository trainingRepository;
@@ -36,7 +40,6 @@ public class TrainingServiceImpl implements TrainingService {
     @Override
     @Transactional
     public void addTraining(String username, AddTrainingRequestDto training) {
-        // You may want to check if the user has rights to add training, but do not authenticate by password
         Trainer trainer = trainerRepository.findByUsername(training.getTrainerUsername())
                 .orElseThrow(() -> new RuntimeException("Trainer not found"));
         Trainee trainee = traineeRepository.findByUsername(training.getTraineeUsername())
@@ -46,18 +49,22 @@ public class TrainingServiceImpl implements TrainingService {
             throw new RuntimeException("Cannot add training for inactive user");
         }
 
-        trainingTypeRepository.findById(training.getTrainingType().getId())
+        TrainingType type = trainingTypeRepository.findById(training.getTrainingType().getId())
                 .orElseThrow(() -> new RuntimeException("TrainingType not found"));
 
         Training entity = trainingMapper.toEntity(training);
+        entity.setTrainer(trainer);
+        entity.setTrainee(trainee);
+        entity.setTrainingType(type);
         Training saved = trainingRepository.save(entity);
+
+        workloadService.updateTrainerWorkload(saved, ActionType.ADD);
         log.info("Added training by user {}", username);
         trainingMetrics.incrementTrainingCreated();
     }
 
     @Override
     public List<TraineeTrainingsListResponseDto> getTraineeTrainings(String username, TraineeTrainingsListRequestDto dto) {
-        // Only filter by username, do not authenticate by password
         return trainingRepository.findTrainingsForTrainee(
                 username, dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTrainerName(), dto.getTrainingTypeName()
         ).stream().map(trainingMapper::toTraineeTrainingsListDto).collect(Collectors.toList());
@@ -65,7 +72,6 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     public List<TrainerTrainingsListResponseDto> getTrainerTrainings(String username, TrainerTrainingsListRequestDto dto) {
-        // Only filter by username, do not authenticate by password
         return trainingRepository.findTrainingsForTrainer(
                 username, dto.getPeriodFrom(), dto.getPeriodTo(), dto.getTraineeName()
         ).stream().map(trainingMapper::toTrainerTrainingsListDto).collect(Collectors.toList());

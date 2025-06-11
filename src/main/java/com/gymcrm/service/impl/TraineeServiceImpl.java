@@ -49,7 +49,6 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Created Trainee with ID={}, username={}", savedTrainee.getId(), savedTrainee.getUsername());
         userMetrics.incrementUserRegistration();
 
-        // Return DTO directly, do not set plain password on entity
         return new UserCreatedResponseDto(savedTrainee.getUsername(), generatedPassword);
     }
 
@@ -70,10 +69,8 @@ public class TraineeServiceImpl implements TraineeService {
     public TraineeProfileResponseDto updateTrainee(TraineeUpdateRequestDto dto) {
         Trainee oldTrainee = traineeRepository.findByUsername(dto.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found: " + dto.getUsername()));
-        // Only update allowed fields
         oldTrainee.setFirstName(dto.getFirstName());
         oldTrainee.setLastName(dto.getLastName());
-        // Add more fields as needed
         Trainee savedTrainee = traineeRepository.save(oldTrainee);
         log.info("Updated Trainee profile for username={}", oldTrainee.getUsername());
         userMetrics.incrementUserProfileUpdate();
@@ -129,7 +126,7 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public TraineeNotAssignedTrainersDto getTrainersNotAssigned(String username) {
-        Trainee trainee = traineeRepository.findByUsername(username)
+        traineeRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
         log.info("Fetched not-assigned trainers for Trainee username={}", username);
         return new TraineeNotAssignedTrainersDto(

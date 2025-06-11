@@ -24,7 +24,11 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -96,7 +100,7 @@ class TrainingServiceTest {
         dto.setTrainerUsername("activeTrainer");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Morning Workout");
-        Date trainingDate = new Date();
+        LocalDate trainingDate = LocalDate.now();
         dto.setTrainingDate(trainingDate);
         dto.setTrainingDuration(60L);
 
@@ -129,7 +133,7 @@ class TrainingServiceTest {
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Workout");
-        dto.setTrainingDate(new Date());
+        dto.setTrainingDate(LocalDate.now());
         dto.setTrainingDuration(60L);
 
         when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.empty());
@@ -146,7 +150,7 @@ class TrainingServiceTest {
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Workout");
-        dto.setTrainingDate(new Date());
+        dto.setTrainingDate(LocalDate.now());
         dto.setTrainingDuration(60L);
 
         when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
@@ -168,7 +172,7 @@ class TrainingServiceTest {
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Workout");
-        dto.setTrainingDate(new Date());
+        dto.setTrainingDate(LocalDate.now());
         dto.setTrainingDuration(60L);
 
         when(trainerRepository.findByUsername("inactiveTrainer")).thenReturn(Optional.of(inactiveTrainer));
@@ -189,7 +193,7 @@ class TrainingServiceTest {
         dto.setTrainerUsername("inactiveTrainee");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Workout");
-        dto.setTrainingDate(new Date());
+        dto.setTrainingDate(LocalDate.now());
         dto.setTrainingDuration(60L);
 
         when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
@@ -207,7 +211,7 @@ class TrainingServiceTest {
         dto.setTrainerUsername("activeTrainee");
         dto.setTrainingType(trainingTypeDto);
         dto.setTrainingName("Workout");
-        dto.setTrainingDate(new Date());
+        dto.setTrainingDate(LocalDate.now());
         dto.setTrainingDuration(60L);
 
         when(trainerRepository.findByUsername("activeTrainer")).thenReturn(Optional.of(activeTrainer));
@@ -224,8 +228,8 @@ class TrainingServiceTest {
         TraineeTrainingsListRequestDto reqDto = new TraineeTrainingsListRequestDto();
         reqDto.setTrainerName("trainerName");
         reqDto.setTrainingTypeName("Strength");
-        Date fromDate = new Date();
-        Date toDate = new Date();
+        LocalDate fromDate = LocalDate.of(2025, 3, 18);
+        LocalDate toDate = LocalDate.now();
         reqDto.setPeriodFrom(fromDate);
         reqDto.setPeriodTo(toDate);
 
@@ -251,8 +255,8 @@ class TrainingServiceTest {
         String username = "authUser";
         TrainerTrainingsListRequestDto reqDto = new TrainerTrainingsListRequestDto();
         reqDto.setTraineeName("traineeName");
-        Date fromDate = new Date();
-        Date toDate = new Date();
+        LocalDate fromDate = LocalDate.of(2025, 3, 18);
+        LocalDate toDate = LocalDate.now();
         reqDto.setPeriodFrom(fromDate);
         reqDto.setPeriodTo(toDate);
 

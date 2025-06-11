@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -15,10 +15,10 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 public class TraineeTrainingsListRequestDto extends UserCreatedResponseDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date periodFrom;
+    private LocalDate periodFrom;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date periodTo;
+    private LocalDate periodTo;
 
     private String trainerName;
 

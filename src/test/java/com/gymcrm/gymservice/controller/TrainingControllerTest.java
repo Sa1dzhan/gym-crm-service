@@ -20,8 +20,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,15 +53,15 @@ public class TrainingControllerTest {
     @Test
     void testGetTraineeTrainings_Success() throws Exception {
         TraineeTrainingsListRequestDto reqDto = new TraineeTrainingsListRequestDto();
-        reqDto.setPeriodFrom(new Date());
-        reqDto.setPeriodTo(new Date());
+        reqDto.setPeriodFrom(LocalDate.of(2021, 3, 26));
+        reqDto.setPeriodTo(LocalDate.of(2022, 3, 26));
         reqDto.setTrainerName("Trainer A");
         reqDto.setTrainingTypeName("Strength");
 
         TraineeTrainingsListResponseDto respDto = new TraineeTrainingsListResponseDto();
         respDto.setTrainingName("Morning Workout");
         respDto.setTrainingDuration(60L);
-        respDto.setTrainingDate(new Date());
+        respDto.setTrainingDate(LocalDate.of(2021, 3, 26));
         respDto.setTrainerName("Trainer A");
         TrainingTypeDto ttDto = new TrainingTypeDto();
         ttDto.setId(1L);
@@ -88,14 +88,14 @@ public class TrainingControllerTest {
     @Test
     void testGetTrainerTrainings_Success() throws Exception {
         TrainerTrainingsListRequestDto reqDto = new TrainerTrainingsListRequestDto();
-        reqDto.setPeriodFrom(new Date());
-        reqDto.setPeriodTo(new Date());
+        reqDto.setPeriodFrom(LocalDate.of(2018, 3, 26));
+        reqDto.setPeriodTo(LocalDate.of(2019, 3, 26));
         reqDto.setTraineeName("Trainee B");
 
         TrainerTrainingsListResponseDto respDto = new TrainerTrainingsListResponseDto();
         respDto.setTrainingName("Evening Session");
         respDto.setTrainingDuration(45L);
-        respDto.setTrainingDate(new Date());
+        respDto.setTrainingDate(LocalDate.of(2018, 3, 26));
         respDto.setTraineeName("Trainee B");
         TrainingTypeDto ttDto = new TrainingTypeDto();
         ttDto.setId(2L);

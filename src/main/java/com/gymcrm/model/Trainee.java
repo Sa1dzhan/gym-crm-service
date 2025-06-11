@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -40,7 +40,7 @@ public class Trainee extends User {
     private String address;
 
     @Column(name = "date_of_birth")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @ManyToMany
     @JoinTable(name = "trainee_trainer",
