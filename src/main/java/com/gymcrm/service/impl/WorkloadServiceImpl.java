@@ -7,8 +7,6 @@ import com.gymcrm.trainerworkload.TrainerWorkloadClient;
 import com.gymcrm.util.ActionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,13 +21,9 @@ public class WorkloadServiceImpl implements WorkloadService {
             WorkloadRequestDto request = new WorkloadRequestDto(training, action);
 
             log.info("Sending workload update request for: {}", training.getTrainer().getUsername());
-            ResponseEntity<?> response = workloadClient.updateTrainerSummary(request);
+            workloadClient.updateTrainerSummary(request);
 
-            if (HttpStatus.OK.equals(response.getStatusCode())) {
-                log.info("Successfully updated workload");
-            } else {
-                log.warn("Failed to update workload: {}", response.getBody());
-            }
+            log.info("Workload update request sent successfully.");
         } catch (Exception e) {
             log.error("Error updating workload: {}", e.getMessage(), e);
         }

@@ -1,11 +1,11 @@
-package com.gymcrm.trainerworkload;
+package com.gymcrm.trainerworkload.rest;
 
 import com.gymcrm.config.JwtUtil;
 import com.gymcrm.dto.workload.DurationRequestDto;
 import com.gymcrm.dto.workload.DurationResponseDto;
 import com.gymcrm.dto.workload.WorkloadRequestDto;
-import com.gymcrm.trainerworkload.read.WorkloadReadSummaryClient;
-import com.gymcrm.trainerworkload.update.WorkloadUpdateSummaryClient;
+import com.gymcrm.trainerworkload.rest.read.WorkloadReadSummaryClient;
+import com.gymcrm.trainerworkload.rest.update.WorkloadUpdateSummaryClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TrainerWorkloadRESTClient implements TrainerWorkloadClient {
+public class TrainerWorkloadREST {
 
     private final WorkloadUpdateSummaryClient updateClient;
 
@@ -25,7 +25,6 @@ public class TrainerWorkloadRESTClient implements TrainerWorkloadClient {
 
     private final String service = "workload";
 
-    @Override
     public ResponseEntity<?> updateTrainerSummary(WorkloadRequestDto request) {
         String transactionId = MDC.get("transactionId");
         String authToken = jwtUtil.generateToken(service.concat(request.getUsername()));
@@ -34,7 +33,6 @@ public class TrainerWorkloadRESTClient implements TrainerWorkloadClient {
         return updateClient.updateTrainerSummary(request, authToken, transactionId);
     }
 
-    @Override
     public ResponseEntity<DurationResponseDto> getTrainerWorkload(DurationRequestDto request) {
         String transactionId = MDC.get("transactionId");
         String authToken = jwtUtil.generateToken(request.getUsername());

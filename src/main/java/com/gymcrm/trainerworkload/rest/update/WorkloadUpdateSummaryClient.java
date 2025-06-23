@@ -1,4 +1,4 @@
-package com.gymcrm.trainerworkload.update;
+package com.gymcrm.trainerworkload.rest.update;
 
 import com.gymcrm.dto.workload.WorkloadRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
