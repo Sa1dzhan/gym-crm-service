@@ -1,6 +1,7 @@
 package com.gymcrm.trainerworkload.messaging;
 
 import com.gymcrm.dto.message.WorkloadMessage;
+import com.gymcrm.dto.message.WorkloadResponseMessage;
 import com.gymcrm.dto.workload.WorkloadRequestDto;
 import com.gymcrm.util.Constants;
 import lombok.RequiredArgsConstructor;
@@ -15,17 +16,18 @@ import org.springframework.stereotype.Component;
 public class TrainerWorkloadSender {
 
     private final RabbitTemplate rabbitTemplate;
-    private final static String QUEUE_NAME = Constants.QUEUE_UPDATE;
 
     public void sendWorkloadUpdate(WorkloadRequestDto request) {
         String transactionId = MDC.get("transactionId");
-        WorkloadMessage msg = WorkloadMessage.builder()
+
+        WorkloadMessage<WorkloadRequestDto> msg = WorkloadMessage.<WorkloadRequestDto>builder()
                 .username(request.getUsername())
                 .transactionId(transactionId)
                 .payload(request)
                 .build();
 
-        log.info("Sending workload update to queue for: {}", request.getUsername());
-        rabbitTemplate.convertAndSend(QUEUE_NAME, msg);
+
+        WorkloadResponseMessage response = (WorkloadResponseMessage) rabbitTemplate.convertSendAndReceive(Constants.QUEUE_UPDATE, msg);
+        log.info("Reply received for user {} with status {}", response.getUsername(), response.getStatus());
     }
 }
