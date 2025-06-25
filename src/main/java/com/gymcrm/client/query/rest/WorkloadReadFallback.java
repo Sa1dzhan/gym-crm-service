@@ -1,4 +1,4 @@
-package com.gymcrm.trainerworkload.rest.read;
+package com.gymcrm.client.query.rest;
 
 import com.gymcrm.dto.workload.DurationRequestDto;
 import com.gymcrm.dto.workload.DurationResponseDto;

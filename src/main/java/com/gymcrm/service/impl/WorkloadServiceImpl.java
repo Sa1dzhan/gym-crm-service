@@ -1,19 +1,22 @@
 package com.gymcrm.service.impl;
 
+import com.gymcrm.client.WorkloadClient;
+import com.gymcrm.dto.workload.DurationRequestDto;
+import com.gymcrm.dto.workload.DurationResponseDto;
 import com.gymcrm.dto.workload.WorkloadRequestDto;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.model.Training;
 import com.gymcrm.service.WorkloadService;
-import com.gymcrm.trainerworkload.TrainerWorkloadClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class WorkloadServiceImpl implements WorkloadService {
-    private final TrainerWorkloadClient workloadClient;
+    private final WorkloadClient workloadClient;
 
     @Override
     public void updateTrainerWorkload(Training training, WorkloadRequestDto.ActionType action) {
@@ -26,6 +29,16 @@ public class WorkloadServiceImpl implements WorkloadService {
             log.info("Workload update request sent successfully.");
         } catch (Exception e) {
             log.error("Error updating workload: {}", e.getMessage(), e);
+        }
+    }
+
+    public ResponseEntity<DurationResponseDto> getTrainerWorkload(DurationRequestDto request) {
+        try {
+            log.info("Processing workload query for: {}", request.getUsername());
+            return workloadClient.getTrainerWorkload(request);
+        } catch (Exception e) {
+            log.error("Error processing workload query: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 

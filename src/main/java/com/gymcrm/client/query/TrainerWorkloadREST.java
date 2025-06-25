@@ -1,11 +1,11 @@
-package com.gymcrm.trainerworkload.rest;
+package com.gymcrm.client.query;
 
+import com.gymcrm.client.query.rest.WorkloadReadSummaryClient;
+import com.gymcrm.client.query.rest.WorkloadUpdateSummaryClient;
 import com.gymcrm.config.JwtUtil;
 import com.gymcrm.dto.workload.DurationRequestDto;
 import com.gymcrm.dto.workload.DurationResponseDto;
 import com.gymcrm.dto.workload.WorkloadRequestDto;
-import com.gymcrm.trainerworkload.rest.read.WorkloadReadSummaryClient;
-import com.gymcrm.trainerworkload.rest.update.WorkloadUpdateSummaryClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TrainerWorkloadREST {
+public class TrainerWorkloadREST implements QueryClient {
 
     private final WorkloadUpdateSummaryClient updateClient;
 

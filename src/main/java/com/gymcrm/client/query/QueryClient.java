@@ -1,12 +1,9 @@
-package com.gymcrm.trainerworkload;
+package com.gymcrm.client.query;
 
 import com.gymcrm.dto.workload.DurationRequestDto;
 import com.gymcrm.dto.workload.DurationResponseDto;
-import com.gymcrm.dto.workload.WorkloadRequestDto;
 import org.springframework.http.ResponseEntity;
 
-public interface TrainerWorkloadClient {
-    ResponseEntity<?> updateTrainerSummary(WorkloadRequestDto request);
-
+public interface QueryClient {
     ResponseEntity<DurationResponseDto> getTrainerWorkload(DurationRequestDto request);
 }

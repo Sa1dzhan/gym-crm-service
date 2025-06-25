@@ -1,4 +1,4 @@
-package com.gymcrm.trainerworkload.messaging;
+package com.gymcrm.client.command;
 
 import com.gymcrm.dto.message.WorkloadMessage;
 import com.gymcrm.dto.message.WorkloadResponseMessage;
@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TrainerWorkloadSender {
-
+public class TrainerWorkloadRabbitMQ implements CommandClient {
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendWorkloadUpdate(WorkloadRequestDto request) {
+    @Override
+    public void updateTrainerSummary(WorkloadRequestDto request) {
         String transactionId = MDC.get("transactionId");
 
         WorkloadMessage<WorkloadRequestDto> msg = WorkloadMessage.<WorkloadRequestDto>builder()
