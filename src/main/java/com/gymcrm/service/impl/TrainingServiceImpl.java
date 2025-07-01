@@ -7,6 +7,7 @@ import com.gymcrm.dto.training.TraineeTrainingsListRequestDto;
 import com.gymcrm.dto.training.TraineeTrainingsListResponseDto;
 import com.gymcrm.dto.training.TrainerTrainingsListRequestDto;
 import com.gymcrm.dto.training.TrainerTrainingsListResponseDto;
+import com.gymcrm.dto.workload.WorkloadRequestDto;
 import com.gymcrm.metrics.TrainingMetrics;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
@@ -14,7 +15,6 @@ import com.gymcrm.model.Training;
 import com.gymcrm.model.TrainingType;
 import com.gymcrm.service.TrainingService;
 import com.gymcrm.service.WorkloadService;
-import com.gymcrm.util.ActionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,7 +58,7 @@ public class TrainingServiceImpl implements TrainingService {
         entity.setTrainingType(type);
         Training saved = trainingRepository.save(entity);
 
-        workloadService.updateTrainerWorkload(saved, ActionType.ADD);
+        workloadService.updateTrainerWorkload(saved, WorkloadRequestDto.ActionType.ADD);
         log.info("Added training by user {}", username);
         trainingMetrics.incrementTrainingCreated();
     }

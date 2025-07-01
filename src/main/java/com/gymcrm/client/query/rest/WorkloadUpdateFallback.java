@@ -1,4 +1,4 @@
-package com.gymcrm.trainerworkload.update;
+package com.gymcrm.client.query.rest;
 
 import com.gymcrm.dto.workload.WorkloadRequestDto;
 import lombok.extern.slf4j.Slf4j;
