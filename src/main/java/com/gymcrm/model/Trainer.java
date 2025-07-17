@@ -33,6 +33,10 @@ import java.util.Set;
                 query = "SELECT t FROM Trainer t WHERE t.username = :username"
         ),
         @NamedQuery(
+                name = "Trainer.findAllByUsername",
+                query = "SELECT t FROM Trainer t WHERE t.username IN :usernames"
+        ),
+        @NamedQuery(
                 name = "Trainer.findAllTrainersNotAssigned",
                 query = "SELECT t FROM Trainer t\n" +
                         "        WHERE t NOT IN (\n" +
